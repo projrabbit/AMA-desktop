@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wireframe Web Dashboard - Hệ thống chấm công thông minh</title>
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #344054;
+      --soft: #f6f8fa;
+      --panel: #fff;
+      --accent: #e8f1ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #f1f3f5;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.35;
+    }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .document-title {
+      border: 2px solid var(--line);
+      background: var(--panel);
+      padding: 18px 22px;
+      margin-bottom: 20px;
+      border-radius: 14px;
+    }
+
+    .document-title h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+    }
+
+    .document-title p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .screen {
+      border: 3px solid var(--line);
+      background: var(--panel);
+      margin-bottom: 28px;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .screen-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 2px solid var(--line);
+      padding: 12px 16px;
+      background: var(--soft);
+    }
+
+    .screen-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .screen-header span {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .screen-body {
+      padding: 16px;
+    }
+
+    .dashboard-shell {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: 680px;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      border-right: 2px solid var(--line);
+      background: #f8fafc;
+      padding: 14px;
+    }
+
+    .brand {
+      border: 2px solid var(--line);
+      padding: 12px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-weight: 700;
+      border-radius: 10px;
+      background: var(--accent);
+    }
+
+    .nav-item {
+      border: 1px solid var(--line);
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #fff;
+      border-radius: 9px;
+    }
+
+    .nav-item.active {
+      border-width: 2px;
+      background: var(--accent);
+      font-weight: 700;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 2px solid var(--line);
+      padding: 12px 16px;
+    }
+
+    .topbar-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .topbar-box {
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      min-width: 120px;
+      text-align: center;
+      background: #fff;
+      border-radius: 999px;
+    }
+
+    .content {
+      padding: 16px;
+      min-width: 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .grid-map {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 14px;
+    }
+
+    .grid-list-detail {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 14px;
+    }
+
+    .box,
+    .card,
+    .table,
+    .form,
+    .placeholder {
+      border: 2px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+    }
+
+    .box,
+    .card,
+    .form {
+      padding: 12px;
+    }
+
+    .card strong {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .card .metric {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .card small {
+      color: var(--muted);
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 150px;
+      color: var(--muted);
+      text-align: center;
+      background: repeating-linear-gradient(45deg, #fff, #fff 10px, #f5f7fa 10px, #f5f7fa 20px);
+    }
+
+    .map-placeholder {
+      position: relative;
+      min-height: 460px;
+      padding: 16px;
+      align-items: stretch;
+      justify-content: stretch;
+      text-align: left;
+    }
+
+    .map-label {
+      position: absolute;
+      inset: 18px;
+      border: 2px dashed var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: center;
+      padding: 18px;
+    }
+
+    .marker {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border: 2px solid var(--line);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+    }
+
+    .marker.one { left: 32%; top: 34%; }
+    .marker.two { left: 55%; top: 48%; }
+    .marker.three { left: 70%; top: 28%; }
+    .marker.four { left: 42%; top: 64%; }
+
+    .floor-stack {
+      position: absolute;
+      left: 36px;
+      bottom: 28px;
+      width: 120px;
+      background: #fff;
+      border: 2px solid var(--line);
+      padding: 8px;
+      border-radius: 10px;
+    }
+
+    .floor-stack div {
+      border: 1px solid var(--line);
+      padding: 6px;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 0;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .input,
+    .button,
+    .select,
+    .textarea,
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 9px 10px;
+      border-radius: 9px;
+    }
+
+    .button {
+      display: inline-block;
+      min-width: 110px;
+      text-align: center;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .button.secondary {
+      font-weight: 400;
+      background: var(--soft);
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      color: var(--muted);
+      min-height: 38px;
+    }
+
+    .textarea {
+      min-height: 90px;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+      border: 1px solid var(--line);
+      padding: 9px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    .table th {
+      background: #f2f2f2;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      background: #fff;
+    }
+
+    .tab.active {
+      border-width: 2px;
+      background: #efefef;
+      font-weight: 700;
+    }
+
+    .wire-note {
+      border: 1px dashed var(--line);
+      padding: 10px;
+      color: var(--muted);
+      background: #fafafa;
+      margin-top: 12px;
+      border-radius: 10px;
+    }
+
+    .login-layout {
+      display: grid;
+      grid-template-columns: 1fr 390px;
+      min-height: 430px;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .login-info,
+    .login-form {
+      padding: 22px;
+    }
+
+    .login-info {
+      border-right: 2px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    @media (max-width: 960px) {
+      .dashboard-shell,
+      .login-layout,
+      .grid-map,
+      .grid-list-detail,
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 2px solid var(--line);
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .login-info {
+        border-right: 0;
+        border-bottom: 2px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="document-title">
+      <h1>Wireframe Web Dashboard - Hệ thống chấm công thông minh</h1>
+      <p>Bản phác thảo giao diện cho HR/Admin/CEO. Tập trung vào bố cục, thông tin chính và thao tác người dùng, chưa đi vào thiết kế màu sắc chi tiết.</p>
+    </section>
+
+    <section class="screen" id="login">
+      <div class="screen-header">
+        <h2>Màn hình 1: Đăng nhập Dashboard</h2>
+        <span>Dành cho HR/Admin/CEO</span>
+      </div>
+      <div class="screen-body">
+        <div class="login-layout">
+          <div class="login-info">
+            <div class="placeholder" style="min-height: 120px;">Logo / tên hệ thống</div>
+            <div class="box">
+              <p class="section-title">Thông tin hệ thống</p>
+              <div class="row"><div class="label">Người dùng</div><div>HR / Admin / CEO</div></div>
+              <div class="row"><div class="label">Mục tiêu</div><div>Truy cập dashboard, báo cáo, bản đồ 3D và quản trị vận hành</div></div>
+              <div class="row"><div class="label">Sau đăng nhập</div><div>Mở đúng màn hình theo quyền của người dùng</div></div>
+            </div>
+          </div>
+          <div class="login-form">
+            <p class="section-title">Form đăng nhập</p>
+            <div class="field">
+              <label>Email công ty</label>
+              <div class="input">name@company.vn</div>
+            </div>
+            <div class="field">
+              <label>Mật khẩu</label>
+              <div class="input">********</div>
+            </div>
+            <div class="field">
+              <label>Vai trò</label>
+              <div class="select">CEO / HR / Admin</div>
+            </div>
+            <div class="button">Đăng nhập</div>
+            <div class="wire-note">Thông báo lỗi hiển thị rõ ràng: sai mật khẩu, tài khoản bị khóa hoặc không có quyền vào Dashboard.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="overview">
+      <div class="screen-header">
+        <h2>Màn hình 2: Dashboard tổng quan</h2>
+        <span>Theo dõi hôm nay</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item active">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Tổng quan chấm công hôm nay</div>
+              <div class="topbar-box">Tự cập nhật: 60s</div>
+              <div class="topbar-box">Admin Nguyễn A</div>
+            </div>
+            <div class="content stack">
+              <div class="grid-4">
+                <div class="card"><strong>Tổng nhân viên</strong><div class="metric">128</div><small>Đang hoạt động</small></div>
+                <div class="card"><strong>Đã chấm công vào</strong><div class="metric">96</div><small>Trong ngày hiện tại</small></div>
+                <div class="card"><strong>Tỷ lệ đúng giờ</strong><div class="metric">91%</div><small>So với giờ bắt đầu ca</small></div>
+                <div class="card"><strong>Cần xem xét</strong><div class="metric">04</div><small>Vị trí, thiết bị hoặc chấm công bất thường</small></div>
+              </div>
+              <div class="grid-2">
+                <div class="placeholder">Bản đồ nhỏ vị trí nhân viên đang làm việc<br>Theo tòa nhà và tầng</div>
+                <div class="placeholder">Biểu đồ tỷ lệ đúng giờ theo phòng ban</div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="table">
+                  <table>
+                    <thead><tr><th>Nhân viên</th><th>Phòng ban</th><th>Trạng thái</th><th>Vị trí gần nhất</th><th>Thời gian</th></tr></thead>
+                    <tbody>
+                      <tr><td>Nguyễn Văn A</td><td>Kỹ thuật</td><td>Đã chấm công vào</td><td>Tòa A - Tầng 3</td><td>08:01</td></tr>
+                      <tr><td>Trần Thị B</td><td>HR</td><td>Đi trễ</td><td>Tòa A - Tầng 2</td><td>08:18</td></tr>
+                      <tr><td>Lê Văn C</td><td>Kinh doanh</td><td>Cần xem xét</td><td>Vị trí chưa đủ chính xác</td><td>08:22</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="box">
+                  <p class="section-title">Panel cảnh báo nhanh</p>
+                  <div class="row"><div class="label">Ngoài vùng</div><div>2 lượt chấm công ngoài khu vực cho phép</div></div>
+                  <div class="row"><div class="label">Bất thường</div><div>1 vị trí không tin cậy, 1 thiết bị lạ</div></div>
+                  <div class="row"><div class="label">Hành động</div><div><span class="button secondary">Xem ngoại lệ</span></div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="map">
+      <div class="screen-header">
+        <h2>Màn hình 3: Bản đồ 3D theo thời gian gần thực</h2>
+        <span>Theo dõi vị trí</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item active">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Theo dõi vị trí nhân viên trên bản đồ 3D</div>
+              <div class="topbar-box">Cập nhật mỗi 30s</div>
+              <div class="topbar-box">96 đang làm việc</div>
+            </div>
+            <div class="content">
+              <div class="grid-map">
+                <div class="placeholder map-placeholder">
+                  <div class="map-label">Khu vực bản đồ 3D<br>Tòa nhà, tầng và vị trí nhân viên</div>
+                  <div class="marker one">NV</div>
+                  <div class="marker two">NV</div>
+                  <div class="marker three">NV</div>
+                  <div class="marker four">NV</div>
+                  <div class="floor-stack">
+                    <div>Tầng 5</div>
+                    <div>Tầng 4</div>
+                    <div>Tầng 3</div>
+                    <div>Tầng 2</div>
+                    <div>Tầng 1</div>
+                  </div>
+                </div>
+                <div class="stack">
+                  <div class="form">
+                    <p class="section-title">Bộ lọc</p>
+                    <div class="field"><label>Tòa nhà</label><div class="select">Tất cả / Tòa A / Tòa B</div></div>
+                    <div class="field"><label>Tầng</label><div class="select">Tất cả / 1 / 2 / 3 / 4 / 5</div></div>
+                    <div class="field"><label>Phòng ban</label><div class="select">Tất cả phòng ban</div></div>
+                    <div class="button">Áp dụng</div>
+                  </div>
+                  <div class="box">
+                    <p class="section-title">Chi tiết nhân viên được chọn</p>
+                    <div class="row"><div class="label">Nhân viên</div><div>Nguyễn Văn A</div></div>
+                    <div class="row"><div class="label">Vị trí ghi nhận</div><div>Tòa A, tầng 3, khu văn phòng</div></div>
+                    <div class="row"><div class="label">Khu vực</div><div>Trong vùng chấm công cho phép</div></div>
+                    <div class="row"><div class="label">Trạng thái</div><div>Đã chấm công vào, trong vùng hợp lệ</div></div>
+                  </div>
+                  <div class="wire-note">Danh sách tự cập nhật từ các lượt chấm công hợp lệ trong ngày.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="geofence">
+      <div class="screen-header">
+        <h2>Màn hình 4: Quản lý vùng chấm công 3D, tòa nhà và tầng</h2>
+        <span>Thiết lập khu vực</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item active">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Thiết lập khu vực cho phép chấm công theo tòa nhà và tầng</div>
+              <div class="topbar-box">Bản đồ đã kết nối</div>
+              <div class="topbar-box">Admin</div>
+            </div>
+            <div class="content stack">
+              <div class="grid-map">
+                <div class="placeholder map-placeholder">
+                  <div class="map-label">Chọn tòa nhà, chọn tầng và vẽ khu vực chấm công</div>
+                  <div class="marker one">G1</div>
+                  <div class="marker two">G2</div>
+                  <div class="floor-stack">
+                    <div>Tầng 4</div>
+                    <div>Tầng 3</div>
+                    <div>Tầng 2</div>
+                  </div>
+                </div>
+                <div class="form">
+                  <p class="section-title">Tạo / sửa vùng chấm công</p>
+                  <div class="field"><label>Tòa nhà</label><div class="select">Tòa nhà A</div></div>
+                  <div class="field"><label>Tầng</label><div class="select">Tầng 3</div></div>
+                  <div class="field"><label>Tên vùng</label><div class="input">Khu văn phòng tầng 3</div></div>
+                  <div class="grid-2">
+                    <div class="field"><label>Điểm trung tâm</label><div class="input">Chọn trên bản đồ</div></div>
+                    <div class="field"><label>Khu vực áp dụng</label><div class="input">Khu văn phòng tầng 3</div></div>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field"><label>Bán kính cho phép</label><div class="input">35m</div></div>
+                    <div class="field"><label>Phạm vi tầng</label><div class="input">Tầng 3</div></div>
+                  </div>
+                  <div class="button">Lưu vùng chấm công</div>
+                  <div class="button secondary">Vô hiệu hóa</div>
+                  <div class="wire-note">Nếu vùng mới bị trùng với vùng đã có, hiển thị cảnh báo để người quản trị chỉnh lại.</div>
+                </div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="table">
+                  <table>
+                    <thead><tr><th>Vùng chấm công</th><th>Tòa nhà</th><th>Tầng</th><th>Bán kính</th><th>Phạm vi</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                      <tr><td>Khu văn phòng tầng 3</td><td>Tòa A</td><td>3</td><td>35m</td><td>Theo tầng</td><td>Đang dùng</td></tr>
+                      <tr><td>Phòng họp tầng 2</td><td>Tòa A</td><td>2</td><td>20m</td><td>Theo tầng</td><td>Đang dùng</td></tr>
+                      <tr><td>Khu lễ tân</td><td>Tòa A</td><td>1</td><td>25m</td><td>Theo tầng</td><td>Tạm tắt</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="box">
+                  <p class="section-title">Tạo nhanh tòa nhà / tầng</p>
+                  <div class="wire-note" style="margin-top: 0; margin-bottom: 10px;">Tòa nhà và tầng là dữ liệu nền để chọn đúng tầng khi tạo vùng chấm công. Vì vậy phần này nằm trong màn hình Vùng chấm công, không tách thành menu riêng.</div>
+                  <div class="field"><label>Tên tòa nhà</label><div class="input">Tòa nhà A</div></div>
+                  <div class="field"><label>Địa chỉ</label><div class="input">Địa chỉ tòa nhà</div></div>
+                  <div class="field"><label>Mã bản đồ 3D</label><div class="input">Nhập nếu có</div></div>
+                  <div class="field"><label>Thông tin tầng</label><div class="input">Số tầng, tên tầng, phạm vi tầng</div></div>
+                  <div class="button secondary">Lưu tòa nhà / tầng</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="buildings-floors">
+      <div class="screen-header">
+        <h2>Màn hình 4.2: Quản lý tòa nhà và tầng</h2>
+        <span>Dữ liệu nền để tạo vùng chấm công đúng tầng</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item active">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Thiết lập tòa nhà, tầng và phạm vi độ cao tương ứng</div>
+              <div class="topbar-box">Admin</div>
+              <div class="topbar-box">Dùng cho bản đồ 3D</div>
+            </div>
+            <div class="content stack">
+              <div class="wire-note">Cần quản lý tòa nhà và tầng vì cùng một tọa độ mặt đất có thể nằm ở nhiều tầng khác nhau. Dữ liệu tầng giúp hệ thống biết nhân viên đang ở tầng nào trước khi đối chiếu vùng chấm công.</div>
+              <div class="grid-list-detail">
+                <div class="stack">
+                  <div class="table">
+                    <table>
+                      <thead><tr><th>Tòa nhà</th><th>Địa chỉ</th><th>Số tầng</th><th>Bản đồ 3D</th><th>Trạng thái</th></tr></thead>
+                      <tbody>
+                        <tr><td>Tòa nhà A</td><td>Khu công nghệ cao</td><td>5</td><td>Đã kết nối</td><td>Đang dùng</td></tr>
+                        <tr><td>Tòa nhà B</td><td>Chi nhánh Quận 1</td><td>12</td><td>Chưa kết nối</td><td>Đang cấu hình</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="table">
+                    <table>
+                      <thead><tr><th>Tầng</th><th>Tên tầng</th><th>Phạm vi tầng</th><th>Vùng chấm công</th><th>Ghi chú</th></tr></thead>
+                      <tbody>
+                        <tr><td>1</td><td>Lễ tân</td><td>0m - 6m</td><td>Khu lễ tân</td><td>Cho khách và nhân viên lễ tân</td></tr>
+                        <tr><td>2</td><td>Phòng họp</td><td>6m - 12m</td><td>Phòng họp tầng 2</td><td>Dùng khi họp nội bộ</td></tr>
+                        <tr><td>3</td><td>Văn phòng</td><td>12m - 18m</td><td>Khu văn phòng tầng 3</td><td>Vùng chấm công chính</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="form">
+                  <p class="section-title">Tạo / sửa tòa nhà và tầng</p>
+                  <div class="field"><label>Tên tòa nhà</label><div class="input">Tòa nhà A</div></div>
+                  <div class="field"><label>Địa chỉ</label><div class="input">Khu công nghệ cao</div></div>
+                  <div class="grid-2">
+                    <div class="field"><label>Vị trí trung tâm</label><div class="input">Chọn trên bản đồ</div></div>
+                    <div class="field"><label>Số tầng</label><div class="input">5</div></div>
+                  </div>
+                  <div class="field"><label>Mã bản đồ 3D</label><div class="input">Nhập nếu có mô hình tòa nhà</div></div>
+                  <hr>
+                  <div class="grid-2">
+                    <div class="field"><label>Số tầng</label><div class="input">3</div></div>
+                    <div class="field"><label>Tên tầng</label><div class="input">Văn phòng</div></div>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field"><label>Từ độ cao</label><div class="input">12m</div></div>
+                    <div class="field"><label>Đến độ cao</label><div class="input">18m</div></div>
+                  </div>
+                  <div class="button">Lưu tòa nhà / tầng</div>
+                  <div class="button secondary">Kiểm tra bản đồ 3D</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="reports">
+      <div class="screen-header">
+        <h2>Màn hình 5: Báo cáo chấm công</h2>
+        <span>Báo cáo và xuất file</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item active">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Xem và xuất báo cáo theo ngày / tuần / tháng</div>
+              <div class="topbar-box">HR / Admin / CEO</div>
+              <div class="topbar-box">Excel / PDF</div>
+            </div>
+            <div class="content stack">
+              <div class="form">
+                <p class="section-title">Bộ lọc báo cáo</p>
+                <div class="grid-4">
+                  <div class="field"><label>Từ ngày</label><div class="input">2026-05-01</div></div>
+                  <div class="field"><label>Đến ngày</label><div class="input">2026-05-31</div></div>
+                  <div class="field"><label>Phòng ban</label><div class="select">Tất cả</div></div>
+                  <div class="field"><label>Nhân viên</label><div class="select">Tất cả</div></div>
+                </div>
+                <div class="button">Xem báo cáo</div>
+                <div class="button secondary">Xuất Excel</div>
+                <div class="button secondary">Xuất PDF</div>
+              </div>
+              <div class="grid-4">
+                <div class="card"><strong>Ngày công</strong><div class="metric">2,012</div><small>Tổng trong kỳ</small></div>
+                <div class="card"><strong>Tổng giờ làm</strong><div class="metric">15,840h</div><small>Tính từ giờ vào và giờ ra</small></div>
+                <div class="card"><strong>Đi trễ / về sớm</strong><div class="metric">34</div><small>Các lượt cần theo dõi</small></div>
+                <div class="card"><strong>Chấm công lỗi</strong><div class="metric">12</div><small>Ngoài vùng hoặc dữ liệu không hợp lệ</small></div>
+              </div>
+              <div class="table">
+                <table>
+                  <thead><tr><th>Nhân viên</th><th>Phòng ban</th><th>Ngày công</th><th>Giờ làm</th><th>Trễ</th><th>Về sớm</th><th>Lỗi</th><th>Ghi chú</th></tr></thead>
+                  <tbody>
+                    <tr><td>Nguyễn Văn A</td><td>Kỹ thuật</td><td>22</td><td>176h</td><td>1</td><td>0</td><td>0</td><td>Đạt</td></tr>
+                    <tr><td>Trần Thị B</td><td>HR</td><td>21</td><td>168h</td><td>2</td><td>1</td><td>0</td><td>Cần nhắc nhở</td></tr>
+                    <tr><td>Lê Văn C</td><td>Kinh doanh</td><td>19</td><td>152h</td><td>0</td><td>0</td><td>2</td><td>Có lượt chấm công ngoài vùng</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="exceptions">
+      <div class="screen-header">
+        <h2>Màn hình 6: Quản lý ngoại lệ và cảnh báo gian lận</h2>
+        <span>Xử lý trường hợp bất thường</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item active">Ngoại lệ</div>
+            <div class="nav-item">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Xử lý các lượt chấm công cần xem xét</div>
+              <div class="topbar-box">12 ngoại lệ</div>
+              <div class="topbar-box">HR / Admin</div>
+            </div>
+            <div class="content">
+              <div class="grid-list-detail">
+                <div class="stack">
+                  <div class="form">
+                    <div class="grid-4">
+                      <div class="field"><label>Trạng thái</label><div class="select">Bị từ chối / Đi trễ / Về sớm</div></div>
+                      <div class="field"><label>Loại cảnh báo</label><div class="select">Vị trí không hợp lệ / Thiết bị lạ / Chấm hộ</div></div>
+                      <div class="field"><label>Từ ngày</label><div class="input">2026-05-04</div></div>
+                      <div class="field"><label>Đến ngày</label><div class="input">2026-05-04</div></div>
+                    </div>
+                  </div>
+                  <div class="table">
+                    <table>
+                      <thead><tr><th>Thời gian</th><th>Nhân viên</th><th>Loại</th><th>Lý do</th><th>Mức tin cậy</th><th>Trạng thái</th></tr></thead>
+                      <tbody>
+                        <tr><td>08:22</td><td>Lê Văn C</td><td>Bị từ chối</td><td>Ngoài vùng cho phép</td><td>88</td><td>Chờ xử lý</td></tr>
+                        <tr><td>08:25</td><td>Phạm Thị D</td><td>Cảnh báo</td><td>Vị trí không tin cậy</td><td>35</td><td>Giữ từ chối</td></tr>
+                        <tr><td>08:31</td><td>Hoàng Văn E</td><td>Đi trễ</td><td>Vào sau giờ ca</td><td>94</td><td>Có thể duyệt</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="box">
+                  <p class="section-title">Chi tiết ngoại lệ</p>
+                  <div class="row"><div class="label">Mã lượt chấm</div><div>#AR-20260504-0022</div></div>
+                  <div class="row"><div class="label">Vị trí ghi nhận</div><div>Gần Tòa A, tầng 2</div></div>
+                  <div class="row"><div class="label">Khu vực cho phép</div><div>Không nằm trong vùng tầng 3 đã cấu hình</div></div>
+                  <div class="row"><div class="label">Dấu hiệu</div><div>Thiết bị lạ, vị trí cần kiểm tra lại</div></div>
+                  <div class="row"><div class="label">Mức tin cậy</div><div>68 - cần HR xem xét</div></div>
+                  <div class="row"><div class="label">Ghi chú</div><div>Thông tin kiểm tra chỉ để đối chiếu, không cho sửa trực tiếp</div></div>
+                  <div style="margin-top: 12px;">
+                    <div class="button">Phê duyệt thủ công</div>
+                    <div class="button secondary">Giữ từ chối</div>
+                  </div>
+                  <div class="wire-note">Mọi thao tác xử lý ngoại lệ đều được lưu vào nhật ký hệ thống.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="system-management">
+      <div class="screen-header">
+        <h2>Màn hình 7: Quản trị hệ thống</h2>
+        <span>Quản trị vận hành</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item active">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Quản lý nhân viên, phòng ban, ca làm việc và thiết bị</div>
+              <div class="topbar-box">HR / Admin</div>
+              <div class="topbar-box">Tự lưu nhật ký</div>
+            </div>
+            <div class="content stack">
+              <div class="tabs">
+                <div class="tab active">Nhân viên</div>
+                <div class="tab">Phòng ban</div>
+                <div class="tab">Ca làm việc</div>
+                <div class="tab">Thiết bị</div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="table">
+                  <table>
+                    <thead><tr><th>Nhân viên</th><th>Phòng ban</th><th>Chức vụ</th><th>Email</th><th>Ca</th><th>Thiết bị</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                      <tr><td>Nguyễn Văn A</td><td>Kỹ thuật</td><td>Lập trình viên</td><td>a@company.vn</td><td>Ca sáng</td><td>Đã duyệt</td><td>Đang làm</td></tr>
+                      <tr><td>Trần Thị B</td><td>Nhân sự</td><td>Chuyên viên nhân sự</td><td>b@company.vn</td><td>Ca hành chính</td><td>Chờ duyệt</td><td>Đang làm</td></tr>
+                      <tr><td>Lê Văn C</td><td>Kinh doanh</td><td>Nhân viên kinh doanh</td><td>c@company.vn</td><td>Ca sáng</td><td>Chưa tin cậy</td><td>Ngưng</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="form">
+                  <p class="section-title">Form tạo / cập nhật</p>
+                  <div class="field"><label>Họ tên</label><div class="input">Nguyễn Văn A</div></div>
+                  <div class="field"><label>Phòng ban</label><div class="select">Kỹ thuật</div></div>
+                  <div class="field"><label>Chức vụ</label><div class="input">Lập trình viên</div></div>
+                  <div class="field"><label>Email</label><div class="input">email công ty</div></div>
+                  <div class="field"><label>Số điện thoại</label><div class="input">0900 000 000</div></div>
+                  <div class="button">Lưu</div>
+                  <div class="button secondary">Vô hiệu hóa</div>
+                </div>
+              </div>
+              <div class="grid-3">
+                <div class="box">
+                  <p class="section-title">Ca làm việc</p>
+                  <div class="row"><div class="label">Tên ca</div><div>Ca hành chính</div></div>
+                  <div class="row"><div class="label">Giờ</div><div>08:00 - 17:00</div></div>
+                  <div class="row"><div class="label">Cho phép</div><div>Trễ 10 phút, về sớm 10 phút</div></div>
+                  <div class="button secondary">Tạo / sửa ca</div>
+                </div>
+                <div class="box">
+                  <p class="section-title">Thiết bị tin cậy</p>
+                  <div class="row"><div class="label">Mã thiết bị</div><div>Đã ẩn một phần để bảo mật</div></div>
+                  <div class="row"><div class="label">Hệ điều hành</div><div>Android</div></div>
+                  <div class="row"><div class="label">Trạng thái</div><div>Chưa được tin cậy</div></div>
+                  <div class="button secondary">Đánh dấu tin cậy</div>
+                </div>
+                <div class="box">
+                  <p class="section-title">Phòng ban</p>
+                  <div class="row"><div class="label">Tên</div><div>Kỹ thuật</div></div>
+                  <div class="row"><div class="label">Trưởng phòng</div><div>Nguyễn Văn A</div></div>
+                  <div class="row"><div class="label">Mô tả</div><div>Phụ trách phát triển hệ thống</div></div>
+                  <div class="button secondary">Lưu phòng ban</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="admin-employees">
+      <div class="screen-header">
+        <h2>Màn hình 8: Quản trị - Nhân viên</h2>
+        <span>Thêm, sửa, vô hiệu hóa nhân viên</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item active">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Quản lý hồ sơ nhân viên</div>
+              <div class="topbar-box">HR / Admin</div>
+              <div class="topbar-box">Tạo tài khoản tự động</div>
+            </div>
+            <div class="content stack">
+              <div class="tabs">
+                <div class="tab active">Nhân viên</div>
+                <div class="tab">Phòng ban</div>
+                <div class="tab">Ca làm việc</div>
+                <div class="tab">Thiết bị</div>
+              </div>
+              <div class="form">
+                <p class="section-title">Bộ lọc nhân viên</p>
+                <div class="grid-4">
+                  <div class="field"><label>Tìm kiếm</label><div class="input">Tên, email hoặc số điện thoại</div></div>
+                  <div class="field"><label>Phòng ban</label><div class="select">Tất cả phòng ban</div></div>
+                  <div class="field"><label>Trạng thái</label><div class="select">Đang làm / Ngưng</div></div>
+                  <div class="field"><label>Ca làm</label><div class="select">Tất cả ca</div></div>
+                </div>
+                <div class="button">Tìm kiếm</div>
+                <div class="button secondary">Thêm nhân viên</div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="table">
+                  <table>
+                    <thead><tr><th>Nhân viên</th><th>Phòng ban</th><th>Chức vụ</th><th>Email</th><th>Ca làm</th><th>Thiết bị</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                      <tr><td>Nguyễn Văn A</td><td>Kỹ thuật</td><td>Lập trình viên</td><td>a@company.vn</td><td>Ca hành chính</td><td>Đã duyệt</td><td>Đang làm</td></tr>
+                      <tr><td>Trần Thị B</td><td>Nhân sự</td><td>Chuyên viên nhân sự</td><td>b@company.vn</td><td>Ca hành chính</td><td>Đã duyệt</td><td>Đang làm</td></tr>
+                      <tr><td>Lê Văn C</td><td>Kinh doanh</td><td>Nhân viên kinh doanh</td><td>c@company.vn</td><td>Ca sáng</td><td>Chưa duyệt</td><td>Đang làm</td></tr>
+                      <tr><td>Phạm Thị D</td><td>Vận hành</td><td>Giám sát</td><td>d@company.vn</td><td>Ca chiều</td><td>Đã duyệt</td><td>Ngưng</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="form">
+                  <p class="section-title">Thông tin nhân viên</p>
+                  <div class="field"><label>Họ tên</label><div class="input">Nguyễn Văn A</div></div>
+                  <div class="field"><label>Email công ty</label><div class="input">a@company.vn</div></div>
+                  <div class="grid-2">
+                    <div class="field"><label>Phòng ban</label><div class="select">Kỹ thuật</div></div>
+                    <div class="field"><label>Chức vụ</label><div class="input">Lập trình viên</div></div>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field"><label>Số điện thoại</label><div class="input">0900 000 000</div></div>
+                    <div class="field"><label>Ngày vào làm</label><div class="input">2026-01-15</div></div>
+                  </div>
+                  <div class="field"><label>Ca làm mặc định</label><div class="select">Ca hành chính</div></div>
+                  <div class="button">Lưu nhân viên</div>
+                  <div class="button secondary">Vô hiệu hóa</div>
+                  <div class="wire-note">Khi tạo nhân viên mới, hệ thống tạo tài khoản đăng nhập bằng email công ty và gửi hướng dẫn đăng nhập lần đầu.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="admin-departments">
+      <div class="screen-header">
+        <h2>Màn hình 9: Quản trị - Phòng ban</h2>
+        <span>Quản lý cơ cấu phòng ban và người phụ trách</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item active">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Quản lý phòng ban</div>
+              <div class="topbar-box">HR / Admin</div>
+              <div class="topbar-box">Dùng cho báo cáo và phân quyền</div>
+            </div>
+            <div class="content stack">
+              <div class="tabs">
+                <div class="tab">Nhân viên</div>
+                <div class="tab active">Phòng ban</div>
+                <div class="tab">Ca làm việc</div>
+                <div class="tab">Thiết bị</div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="table">
+                  <table>
+                    <thead><tr><th>Phòng ban</th><th>Trưởng phòng</th><th>Số nhân viên</th><th>Ca mặc định</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                      <tr><td>Kỹ thuật</td><td>Nguyễn Văn A</td><td>42</td><td>Ca hành chính</td><td>Đang dùng</td></tr>
+                      <tr><td>Nhân sự</td><td>Trần Thị B</td><td>8</td><td>Ca hành chính</td><td>Đang dùng</td></tr>
+                      <tr><td>Kinh doanh</td><td>Lê Văn C</td><td>31</td><td>Ca sáng</td><td>Đang dùng</td></tr>
+                      <tr><td>Vận hành</td><td>Phạm Thị D</td><td>18</td><td>Ca chiều</td><td>Đang dùng</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="form">
+                  <p class="section-title">Tạo / sửa phòng ban</p>
+                  <div class="field"><label>Tên phòng ban</label><div class="input">Kỹ thuật</div></div>
+                  <div class="field"><label>Trưởng phòng</label><div class="select">Nguyễn Văn A</div></div>
+                  <div class="field"><label>Ca làm mặc định</label><div class="select">Ca hành chính</div></div>
+                  <div class="field"><label>Mô tả</label><div class="textarea">Phụ trách phát triển, vận hành và bảo trì hệ thống.</div></div>
+                  <div class="button">Lưu phòng ban</div>
+                  <div class="button secondary">Tạm ngưng</div>
+                  <div class="wire-note">Phòng ban giúp HR lọc báo cáo, gán ca theo nhóm và phân quyền quản lý nhân sự.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="admin-shifts">
+      <div class="screen-header">
+        <h2>Màn hình 10: Quản trị - Ca làm việc</h2>
+        <span>Tạo ca, gán ca và kiểm tra xung đột thời gian</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item active">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Quản lý ca làm việc</div>
+              <div class="topbar-box">HR / Admin</div>
+              <div class="topbar-box">Áp dụng cho chấm công</div>
+            </div>
+            <div class="content stack">
+              <div class="tabs">
+                <div class="tab">Nhân viên</div>
+                <div class="tab">Phòng ban</div>
+                <div class="tab active">Ca làm việc</div>
+                <div class="tab">Thiết bị</div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="stack">
+                  <div class="table">
+                    <table>
+                      <thead><tr><th>Tên ca</th><th>Giờ vào</th><th>Giờ ra</th><th>Cho phép trễ</th><th>Cho phép về sớm</th><th>Áp dụng</th></tr></thead>
+                      <tbody>
+                        <tr><td>Ca hành chính</td><td>08:00</td><td>17:00</td><td>10 phút</td><td>10 phút</td><td>Kỹ thuật, Nhân sự</td></tr>
+                        <tr><td>Ca sáng</td><td>06:00</td><td>14:00</td><td>5 phút</td><td>5 phút</td><td>Kinh doanh</td></tr>
+                        <tr><td>Ca chiều</td><td>14:00</td><td>22:00</td><td>5 phút</td><td>5 phút</td><td>Vận hành</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="box">
+                    <p class="section-title">Gán ca nhanh</p>
+                    <div class="grid-3">
+                      <div class="field"><label>Gán cho</label><div class="select">Phòng ban / Nhân viên</div></div>
+                      <div class="field"><label>Đối tượng</label><div class="select">Kỹ thuật</div></div>
+                      <div class="field"><label>Ca làm</label><div class="select">Ca hành chính</div></div>
+                    </div>
+                    <div class="button secondary">Gán ca</div>
+                  </div>
+                </div>
+                <div class="form">
+                  <p class="section-title">Tạo / sửa ca</p>
+                  <div class="field"><label>Tên ca</label><div class="input">Ca hành chính</div></div>
+                  <div class="grid-2">
+                    <div class="field"><label>Giờ vào</label><div class="input">08:00</div></div>
+                    <div class="field"><label>Giờ ra</label><div class="input">17:00</div></div>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field"><label>Cho phép đi trễ</label><div class="input">10 phút</div></div>
+                    <div class="field"><label>Cho phép về sớm</label><div class="input">10 phút</div></div>
+                  </div>
+                  <div class="field"><label>Áp dụng cuối tuần</label><div class="select">Không</div></div>
+                  <div class="wire-note">Cảnh báo nếu giờ ca bị trùng với ca khác hoặc thay đổi ca đang được áp dụng.</div>
+                  <div class="button">Lưu ca</div>
+                  <div class="button secondary">Hủy</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="admin-devices">
+      <div class="screen-header">
+        <h2>Màn hình 11: Quản trị - Thiết bị tin cậy</h2>
+        <span>Duyệt thiết bị mới và thu hồi thiết bị không còn dùng</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item active">Quản trị</div>
+            <div class="nav-item">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Quản lý thiết bị dùng để chấm công</div>
+              <div class="topbar-box">Admin</div>
+              <div class="topbar-box">Giảm rủi ro chấm công hộ</div>
+            </div>
+            <div class="content stack">
+              <div class="tabs">
+                <div class="tab">Nhân viên</div>
+                <div class="tab">Phòng ban</div>
+                <div class="tab">Ca làm việc</div>
+                <div class="tab active">Thiết bị</div>
+              </div>
+              <div class="form">
+                <p class="section-title">Bộ lọc thiết bị</p>
+                <div class="grid-4">
+                  <div class="field"><label>Tìm kiếm</label><div class="input">Tên nhân viên hoặc mã thiết bị</div></div>
+                  <div class="field"><label>Trạng thái</label><div class="select">Chờ duyệt / Đã duyệt / Đã thu hồi</div></div>
+                  <div class="field"><label>Hệ điều hành</label><div class="select">Android / iOS</div></div>
+                  <div class="field"><label>Phòng ban</label><div class="select">Tất cả</div></div>
+                </div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="table">
+                  <table>
+                    <thead><tr><th>Nhân viên</th><th>Thiết bị</th><th>Hệ điều hành</th><th>Đăng ký lúc</th><th>Trạng thái</th><th>Ghi chú</th></tr></thead>
+                    <tbody>
+                      <tr><td>Nguyễn Văn A</td><td>Đã ẩn một phần</td><td>Android</td><td>2026-05-01 08:20</td><td>Đã duyệt</td><td>Thiết bị chính</td></tr>
+                      <tr><td>Lê Văn C</td><td>Đã ẩn một phần</td><td>iOS</td><td>2026-05-04 08:02</td><td>Chờ duyệt</td><td>Thiết bị mới</td></tr>
+                      <tr><td>Phạm Thị D</td><td>Đã ẩn một phần</td><td>Android</td><td>2026-04-20 17:40</td><td>Đã thu hồi</td><td>Máy cũ</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="box">
+                  <p class="section-title">Chi tiết thiết bị được chọn</p>
+                  <div class="row"><div class="label">Nhân viên</div><div>Lê Văn C - Kinh doanh</div></div>
+                  <div class="row"><div class="label">Dòng máy</div><div>iPhone 14</div></div>
+                  <div class="row"><div class="label">Lần đăng ký</div><div>2026-05-04 08:02</div></div>
+                  <div class="row"><div class="label">Trạng thái</div><div>Chờ duyệt</div></div>
+                  <div class="row"><div class="label">Rủi ro</div><div>Thiết bị mới, cần Admin xác nhận trước khi dùng chính thức</div></div>
+                  <div style="margin-top: 12px;">
+                    <div class="button">Duyệt thiết bị</div>
+                    <div class="button secondary">Thu hồi</div>
+                  </div>
+                  <div class="wire-note">Thiết bị chưa được duyệt vẫn có thể chấm công nhưng sẽ bị đánh dấu cần xem xét để HR kiểm tra.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="audit-log">
+      <div class="screen-header">
+        <h2>Màn hình 12: Tra cứu nhật ký hệ thống</h2>
+        <span>Nhật ký hệ thống</span>
+      </div>
+      <div class="screen-body">
+        <div class="dashboard-shell">
+          <aside class="sidebar">
+            <div class="brand">Chấm công 3D</div>
+            <div class="nav-item">Tổng quan</div>
+            <div class="nav-item">Bản đồ 3D</div>
+            <div class="nav-item">Vùng chấm công</div>
+            <div class="nav-item">Báo cáo</div>
+            <div class="nav-item">Ngoại lệ</div>
+            <div class="nav-item">Quản trị</div>
+            <div class="nav-item active">Nhật ký</div>
+          </aside>
+          <section class="main">
+            <div class="topbar">
+              <div class="topbar-title">Nhật ký thao tác, chỉ xem</div>
+              <div class="topbar-box">Chỉ Admin</div>
+              <div class="topbar-box">Không sửa/xóa</div>
+            </div>
+            <div class="content stack">
+              <div class="form">
+                <p class="section-title">Bộ lọc nhật ký</p>
+                <div class="grid-4">
+                  <div class="field"><label>Người thao tác</label><div class="input">Tên người dùng</div></div>
+                  <div class="field"><label>Loại thao tác</label><div class="select">Chấm công / Tạo vùng / Đăng nhập</div></div>
+                  <div class="field"><label>Khu vực dữ liệu</label><div class="select">Chấm công / Vùng chấm công / Ca làm</div></div>
+                  <div class="field"><label>Khoảng thời gian</label><div class="input">Từ ngày - đến ngày</div></div>
+                </div>
+                <div class="button">Tìm kiếm</div>
+              </div>
+              <div class="grid-list-detail">
+                <div class="table">
+                  <table>
+                    <thead><tr><th>Thời gian</th><th>Người thao tác</th><th>Hành động</th><th>Dữ liệu liên quan</th><th>Địa chỉ</th></tr></thead>
+                    <tbody>
+                      <tr><td>2026-05-04 08:22</td><td>admin01</td><td>Duyệt thủ công</td><td>Lượt chấm công #22</td><td>192.168.1.8</td></tr>
+                      <tr><td>2026-05-04 08:10</td><td>hr01</td><td>Gán ca làm</td><td>Nhân viên #17</td><td>192.168.1.10</td></tr>
+                      <tr><td>2026-05-04 08:01</td><td>nhanvien21</td><td>Chấm công vào thành công</td><td>Lượt chấm công #21</td><td>10.0.0.5</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="box">
+                  <p class="section-title">Chi tiết thao tác</p>
+                  <div class="textarea">Lượt chấm công #22 được chuyển từ "Bị từ chối" sang "Đã duyệt" sau khi HR kiểm tra vị trí và ghi chú bổ sung.</div>
+                  <div class="wire-note">Nhật ký chỉ xem, không có nút sửa hoặc xóa để đảm bảo truy vết.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
