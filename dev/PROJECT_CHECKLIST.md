@@ -6,31 +6,31 @@ Primary scope: React + TypeScript desktop dashboard for Manager/CEO, HR, and Adm
 
 ## Phase 0 - Foundation Before Screens
 
-- [ ] Confirm dashboard-only scope for this repo.
-- [ ] Confirm supported roles: `manager`, `hr`, `admin`; block or redirect `employee` from desktop dashboard.
-- [ ] Use `dev/openAPI.json` as the API contract source of truth unless backend confirms otherwise.
-- [ ] Reconcile API differences across `FULL_API_DOCS.md`, `openAPI.json`, and `SWAGGER_MANUAL_TEST_DATA.md`.
-- [ ] Confirm exact endpoint names for device self endpoint: `/devices/me` vs `/devices/my`.
-- [ ] Confirm exact endpoint names for shift assignment: `/employees/{employee_id}/shift` vs `/employees/{employee_id}/assign-shift`.
-- [ ] Confirm exact endpoint names for face management: `/employees/{employee_id}/face` vs `/employees/{employee_id}/face/status` and `/face/register`.
-- [ ] Confirm exact endpoint for disabling geofence: `DELETE /geofences/{geofence_id}` vs `PUT /geofences/{geofence_id}/disable`.
-- [ ] Confirm trailing slash behavior for `/buildings/`, `/geofences/`, and `/audit-logs/` from OpenAPI.
-- [ ] Confirm final role permission matrix for audit logs, face management, geofence writes, reports export, and dashboard access.
-- [ ] Confirm map implementation path: ArcGIS integration now or 3D placeholder first.
-- [ ] Scaffold React + TypeScript app, preferably Vite.
-- [ ] Add scripts: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`.
-- [ ] Configure TypeScript strictness, path aliases, ESLint, Prettier.
-- [ ] Create folder structure: `src/app`, `src/routes`, `src/features`, `src/components`, `src/lib`, `src/services`, `src/types`.
-- [ ] Configure environment variables: `VITE_API_BASE_URL`, map config, build mode.
-- [ ] Build API client with `/api/v1` base path.
-- [ ] Support standard response shape: `success`, `data`, `meta`, `error`.
-- [ ] Support token storage, refresh, logout, and `401` handling.
-- [ ] Support query params, pagination, multipart uploads, and binary downloads.
-- [ ] Map backend error codes to Vietnamese messages.
-- [ ] Build shared Vietnamese UI primitives: button, input, select, date picker, table, badge, card, modal, drawer, tabs, toast.
-- [ ] Build shared page states: loading, empty, error, forbidden, not found.
-- [ ] Build enum label maps in Vietnamese for roles, attendance status, rejection reasons, device platform, notification type, export format.
-- [ ] Build protected dashboard layout: sidebar, topbar, content area, responsive desktop/tablet behavior.
+- [x] Confirm dashboard-only scope for this repo.
+- [x] Confirm supported roles: `manager`, `hr`, `admin`; block or redirect `employee` from desktop dashboard.
+- [x] Use `dev/openAPI.json` as the API contract source of truth unless backend confirms otherwise.
+- [x] Reconcile API differences across `FULL_API_DOCS.md`, `openAPI.json`, and `SWAGGER_MANUAL_TEST_DATA.md`.
+- [x] Confirm exact endpoint names for device self endpoint: `/devices/me` vs `/devices/my`.
+- [x] Confirm exact endpoint names for shift assignment: `/employees/{employee_id}/shift` vs `/employees/{employee_id}/assign-shift`.
+- [x] Confirm exact endpoint names for face management: `/employees/{employee_id}/face` vs `/employees/{employee_id}/face/status` and `/face/register`.
+- [x] Confirm exact endpoint for disabling geofence: `DELETE /geofences/{geofence_id}` vs `PUT /geofences/{geofence_id}/disable`.
+- [x] Confirm trailing slash behavior for `/buildings/`, `/geofences/`, and `/audit-logs/` from OpenAPI.
+- [x] Confirm final role permission matrix for audit logs, face management, geofence writes, reports export, and dashboard access.
+- [x] Confirm map implementation path: ArcGIS integration now or 3D placeholder first.
+- [x] Scaffold React + TypeScript app, preferably Vite.
+- [x] Add scripts: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`.
+- [x] Configure TypeScript strictness, path aliases, ESLint, Prettier.
+- [x] Create folder structure: `src/app`, `src/routes`, `src/features`, `src/components`, `src/lib`, `src/services`, `src/types`.
+- [x] Configure environment variables: `VITE_API_BASE_URL`, map config, build mode.
+- [x] Build API client with `/api/v1` base path.
+- [x] Support standard response shape: `success`, `data`, `meta`, `error`.
+- [x] Support token storage, refresh, logout, and `401` handling.
+- [x] Support query params, pagination, multipart uploads, and binary downloads.
+- [x] Map backend error codes to Vietnamese messages.
+- [x] Build shared Vietnamese UI primitives: button, input, select, date picker, table, badge, card, modal, drawer, tabs, toast.
+- [x] Build shared page states: loading, empty, error, forbidden, not found.
+- [x] Build enum label maps in Vietnamese for roles, attendance status, rejection reasons, device platform, notification type, export format.
+- [x] Build protected dashboard layout: sidebar, topbar, content area, responsive desktop/tablet behavior.
 
 ## Screen 1 - Đăng Nhập Dashboard
 
