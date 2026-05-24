@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 import { browserTokenStorage, subscribeTokenStorage, type TokenStorage } from '@/lib/api/tokenStorage';
 import { isDashboardRole } from '@/lib/auth/permissions';
+import { isLoginBypassEnabled } from '@/lib/config/env';
 import { authService } from '@/services/authService';
 import type { ApiSuccess } from '@/types/api';
 import type { AccountRole, MeData } from '@/types/api';
@@ -15,6 +16,7 @@ interface SessionContextValue {
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
+const DEV_LOGIN_BYPASS_ROLE: AccountRole = 'admin';
 
 interface SessionProviderProps {
   children: ReactNode;
@@ -25,7 +27,7 @@ interface SessionProviderProps {
 
 export function SessionProvider({
   children,
-  initialRole = null,
+  initialRole = isLoginBypassEnabled(import.meta.env.VITE_BYPASS_LOGIN) ? DEV_LOGIN_BYPASS_ROLE : null,
   loadCurrentUser = authService.me,
   tokenStorage = browserTokenStorage,
 }: SessionProviderProps) {

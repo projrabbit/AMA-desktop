@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getApiBaseUrl, getArcgisConfig } from './env';
+import { getApiBaseUrl, getArcgisConfig, isLoginBypassEnabled } from './env';
 
 describe('environment helpers', () => {
   it('adds /api/v1 when the base URL is only the backend host', () => {
@@ -27,5 +27,12 @@ describe('environment helpers', () => {
 
     expect(config.defaultCenter).toEqual({ longitude: 106.7, latitude: 10.77 });
     expect(config.defaultZoom).toBe(16);
+  });
+
+  it('enables login bypass only when the flag is true', () => {
+    expect(isLoginBypassEnabled('true')).toBe(true);
+    expect(isLoginBypassEnabled(' TRUE ')).toBe(true);
+    expect(isLoginBypassEnabled('false')).toBe(false);
+    expect(isLoginBypassEnabled(undefined)).toBe(false);
   });
 });

@@ -323,3 +323,4 @@ Reference files: HTML `dev/wireframe/wireframe_dashboard.html` (`#audit-log`, li
 - [ ] Loading, empty, error, forbidden, and success states are covered.
 - [ ] `lint`, `typecheck`, tests, and production build pass.
 - [ ] README and QA notes are complete.
+- [ ] Enable login page lại bằng cách tắt `VITE_BYPASS_LOGIN` sau khi hoàn thành các màn hình còn lại.

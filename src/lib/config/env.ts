@@ -7,6 +7,10 @@ export interface RawArcgisEnv {
   VITE_ARCGIS_DEFAULT_ZOOM?: string;
 }
 
+export interface RawAuthEnv {
+  VITE_BYPASS_LOGIN?: string;
+}
+
 export interface ArcgisAppConfig {
   apiKey: string;
   portalUrl: string;
@@ -45,4 +49,8 @@ export function getArcgisConfig(env: RawArcgisEnv = import.meta.env as RawArcgis
     },
     defaultZoom: parseNumber(env.VITE_ARCGIS_DEFAULT_ZOOM, DEFAULT_ZOOM),
   };
+}
+
+export function isLoginBypassEnabled(rawFlag: string | undefined): boolean {
+  return rawFlag?.trim().toLowerCase() === 'true';
 }
