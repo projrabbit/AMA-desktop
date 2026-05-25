@@ -51,17 +51,17 @@ Reference files: HTML `dev/wireframe/wireframe_dashboard.html` (`#login`, line 4
 
 Reference files: HTML `dev/wireframe/wireframe_dashboard.html` (`#overview`, line 512); MD `dev/wireframe/desktop/02_dashboard_tong_quan.md`; OpenAPI `dev/openAPI.json` (`/api/v1/dashboard/summary`).
 
-- [ ] Implement `Tổng quan` route and sidebar active state.
-- [ ] Connect `/dashboard/summary`.
-- [ ] Add date filter if needed by API and UX.
-- [ ] Show KPI cards: tổng nhân viên, đã chấm công vào, tỷ lệ đúng giờ, cần xem xét.
-- [ ] Also show available summary fields: đi trễ, về sớm, vắng mặt, cảnh báo gian lận.
-- [ ] Build mini-map or placeholder for active employee locations.
-- [ ] Build chart/placeholder for on-time rate by department if data is available.
-- [ ] Build quick table: employee, department, status, latest location, time.
-- [ ] Build quick alert panel linking to `Ngoại lệ`.
-- [ ] Poll summary every 60 seconds.
-- [ ] Handle no data, loading, API error, and forbidden states.
+- [x] Implement `Tổng quan` route and sidebar active state.
+- [x] Connect `/dashboard/summary`.
+- [x] Add date filter if needed by API and UX.
+- [x] Show KPI cards: tổng nhân viên, đã chấm công vào, tỷ lệ đúng giờ, cần xem xét.
+- [x] Also show available summary fields: đi trễ, về sớm, vắng mặt, cảnh báo gian lận.
+- [x] Build mini-map or placeholder for active employee locations.
+- [x] Build chart/placeholder for on-time rate by department if data is available.
+- [x] Build quick table: employee, department, status, latest location, time.
+- [x] Build quick alert panel linking to `Ngoại lệ`.
+- [x] Poll summary every 60 seconds.
+- [x] Handle no data, loading, API error, and forbidden states.
 
 ## Screen 3 - Bản Đồ 3D Theo Thời Gian Gần Thực
 
