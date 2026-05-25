@@ -1,9 +1,22 @@
-import { Card } from '@/components/ui/Card';
+import { RemoteTablePage } from '@/components/data/RemoteTablePage';
+import { employeeService } from '@/services/employeeService';
+import type { EmployeeInfo } from '@/types/api';
 
 export function AdminEmployeesPage() {
   return (
-    <Card title="Quản trị nhân viên">
-      <p>Endpoint nhân viên, ca làm việc và khuôn mặt đã được đóng gói trong service.</p>
-    </Card>
+    <RemoteTablePage<EmployeeInfo>
+      title="Quản trị nhân viên"
+      description="Danh sách nhân viên lấy từ API employees."
+      load={() => employeeService.list({ limit: 50 })}
+      getRowKey={(item) => item.employee_id}
+      columns={[
+        { header: 'Nhân viên', render: (item) => item.full_name },
+        { header: 'Email', render: (item) => item.email },
+        { header: 'Phòng ban', render: (item) => item.department_name ?? item.department_id },
+        { header: 'Vị trí', render: (item) => item.position ?? 'N/A' },
+        { header: 'Trạng thái', render: (item) => item.status },
+        { header: 'Vai trò', render: (item) => item.account?.role ?? 'N/A' },
+      ]}
+    />
   );
 }

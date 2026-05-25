@@ -41,7 +41,10 @@ export function DashboardLayout() {
   return (
     <div className="dashboard-layout">
       <aside className="dashboard-sidebar" aria-label="Điều hướng Dashboard">
-        <strong>AMA Dashboard</strong>
+        <div className="dashboard-brand" aria-label="AMA Dashboard">
+          <span className="dashboard-brand__mark">AMA</span>
+          <span>Attendance Ops</span>
+        </div>
         <nav>
           {navItems.map((item) => (
             <NavLink key={item.to} to={item.to}>
@@ -52,12 +55,13 @@ export function DashboardLayout() {
       </aside>
       <div className="dashboard-main">
         <header className="dashboard-topbar">
-          <div>
-            <span>Trạng thái: sẵn sàng</span>
+          <div className="dashboard-topbar__title">
+            <span className="dashboard-status-pill">Hoạt động</span>
             <h1>{pageTitle(location.pathname)}</h1>
           </div>
           <div className="dashboard-topbar__actions">
-            <span>Vai trò: {role ?? 'Chưa đăng nhập'}</span>
+            <span className="dashboard-sync-note">Cập nhật mỗi 60s</span>
+            <span className="dashboard-role">Vai trò: {role ?? 'Chưa đăng nhập'}</span>
             <Button variant="ghost" onClick={handleLogout}>
               Đăng xuất
             </Button>

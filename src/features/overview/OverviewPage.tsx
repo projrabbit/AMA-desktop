@@ -106,11 +106,11 @@ export function OverviewPage() {
 
   return (
     <section className="overview-page" aria-labelledby="overview-title">
-      <header className="overview-hero">
+      <header className="overview-command-bar">
         <div>
-          <p className="overview-eyebrow">Dashboard Tổng Quan</p>
+          <p className="overview-eyebrow">Dashboard tổng quan</p>
           <h2 id="overview-title">Tổng quan chấm công hôm nay</h2>
-          <p>Dữ liệu ngày {summary.date}. Theo dõi nhanh tình hình vào ca, đúng giờ và cảnh báo.</p>
+          <p>Dữ liệu ngày {summary.date}. Theo dõi vào ca, đúng giờ và cảnh báo cần xử lý.</p>
         </div>
         <div className="overview-controls">
           <DatePicker
@@ -133,22 +133,22 @@ export function OverviewPage() {
       ) : null}
 
       <section className="overview-kpis" aria-label="Chỉ số chấm công chính">
-        <article className="overview-kpi-card">
+        <article className="overview-kpi-card" data-tone="people">
           <span>Tổng nhân viên</span>
           <strong>{formatNumber(summary.total_employees)}</strong>
           <small>Nhân sự đang hoạt động</small>
         </article>
-        <article className="overview-kpi-card">
+        <article className="overview-kpi-card" data-tone="checkin">
           <span>Đã chấm công vào</span>
           <strong>{formatNumber(summary.checked_in_today)}</strong>
           <small>{formatNumber(summary.on_time_count)} lượt đúng giờ</small>
         </article>
-        <article className="overview-kpi-card">
+        <article className="overview-kpi-card" data-tone="rate">
           <span>Tỷ lệ đúng giờ</span>
           <strong>{formatPercent(summary.on_time_rate)}</strong>
           <small>So với giờ bắt đầu ca</small>
         </article>
-        <article className="overview-kpi-card overview-kpi-card--warning">
+        <article className="overview-kpi-card overview-kpi-card--warning" data-tone="warning">
           <span>Cần xem xét</span>
           <strong>{formatNumber(reviewCount)}</strong>
           <small>Cảnh báo gian lận hôm nay</small>
@@ -196,7 +196,7 @@ export function OverviewPage() {
           )}
         </article>
 
-        <article className="overview-panel">
+        <article className="overview-panel overview-rate-panel">
           <div>
             <p className="overview-panel__label">Tỷ lệ đúng giờ</p>
             <h3>Theo dữ liệu hiện có</h3>

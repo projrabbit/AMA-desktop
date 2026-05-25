@@ -1,9 +1,20 @@
-import { Card } from '@/components/ui/Card';
+import { RemoteTablePage } from '@/components/data/RemoteTablePage';
+import { departmentService } from '@/services/departmentService';
+import type { DepartmentItem } from '@/types/api';
 
 export function AdminDepartmentsPage() {
   return (
-    <Card title="Quản trị phòng ban">
-      <p>Service phòng ban đã sẵn sàng cho danh sách, tạo mới và cập nhật.</p>
-    </Card>
+    <RemoteTablePage<DepartmentItem>
+      title="Quản trị phòng ban"
+      description="Danh sách phòng ban lấy từ API departments."
+      load={() => departmentService.list({ limit: 50 })}
+      getRowKey={(item) => item.department_id}
+      columns={[
+        { header: 'Phòng ban', render: (item) => item.name },
+        { header: 'Mô tả', render: (item) => item.description ?? 'N/A' },
+        { header: 'Quản lý', render: (item) => item.manager_name ?? item.manager_id ?? 'Chưa gán' },
+        { header: 'Nhân viên', render: (item) => item.employee_count ?? 0 },
+      ]}
+    />
   );
 }

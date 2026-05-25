@@ -8,6 +8,8 @@ const backendErrorMessages: Record<string, string> = {
   FORBIDDEN: 'Bạn không có quyền thực hiện thao tác này.',
   NOT_FOUND: 'Không tìm thấy dữ liệu yêu cầu.',
   VALIDATION_ERROR: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại.',
+  HTTP_ERROR: 'Máy chủ đang gặp lỗi. Vui lòng thử lại sau.',
+  INTERNAL_SERVER_ERROR: 'Máy chủ đang gặp lỗi. Vui lòng thử lại sau.',
   NETWORK_ERROR: 'Không thể kết nối máy chủ. Vui lòng kiểm tra mạng hoặc thử lại sau.',
   DUPLICATE_EMAIL: 'Email đã tồn tại trong hệ thống.',
   DUPLICATE_PHONE: 'Số điện thoại đã tồn tại trong hệ thống.',

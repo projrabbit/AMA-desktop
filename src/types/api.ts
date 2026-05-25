@@ -56,7 +56,10 @@ export interface EmployeeInfo {
   phone?: string | null;
   position?: string | null;
   department_id: number;
+  department_name?: string;
+  hire_date?: string | null;
   status: EmployeeStatus;
+  account?: AccountInfo | null;
 }
 
 export interface LoginData {
@@ -111,7 +114,10 @@ export interface DashboardSummaryData {
 }
 
 export interface RealtimeLocationItem extends ActiveLocationItem {
+  department_id?: number;
+  record_id?: number;
   gps_accuracy: number | null;
+  arcgis_layer_id?: string | null;
   checked_in_at: string;
 }
 
@@ -155,12 +161,15 @@ export interface DepartmentItem {
   name: string;
   description?: string | null;
   manager_id?: number | null;
+  manager_name?: string | null;
   employee_count?: number;
+  created_at?: string;
 }
 
 export interface ShiftItem {
   shift_id: number;
   employee_id: number;
+  employee_name?: string;
   name: string;
   start_time: string;
   end_time: string;
@@ -171,7 +180,12 @@ export interface ShiftItem {
 
 export interface DeviceItem {
   device_id: number;
-  employee_id: number;
+  employee_id?: number;
+  employee?: {
+    employee_id: number;
+    full_name: string;
+    department_name: string;
+  };
   device_fingerprint: string;
   platform: DevicePlatform;
   model?: string | null;
@@ -200,11 +214,16 @@ export interface AuditLogListData {
 }
 
 export interface ReportSummary {
-  work_days: number;
-  total_hours: number;
+  employee_count?: number;
+  total_work_days?: number;
+  total_work_minutes?: number;
+  absent_count?: number;
+  rejected_count?: number;
+  work_days?: number;
+  total_hours?: number;
   late_count: number;
   early_leave_count: number;
-  error_count: number;
+  error_count?: number;
 }
 
 export interface ReportEmployeeSummary {
@@ -212,18 +231,26 @@ export interface ReportEmployeeSummary {
   full_name: string;
   department_name: string;
   work_days: number;
-  total_hours: number;
+  total_hours?: number;
+  total_work_minutes?: number;
   late_count: number;
   early_leave_count: number;
+  absent_count?: number;
+  rejected_count?: number;
 }
 
 export interface ReportDayDetail {
   employee_id: number;
+  full_name?: string;
+  department_name?: string;
   date: string;
   checkin_at: string | null;
   checkout_at: string | null;
   status: string;
-  total_hours: number;
+  total_hours?: number;
+  worked_minutes?: number | null;
+  is_late?: boolean;
+  is_early_leave?: boolean;
 }
 
 export interface AttendanceReportData {

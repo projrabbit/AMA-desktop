@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ApiError } from '@/lib/api/apiErrors';
 import { browserTokenStorage } from '@/lib/api/tokenStorage';
 import { isDashboardRole } from '@/lib/auth/permissions';
 import { useSession } from '@/lib/auth/session';
@@ -40,8 +41,12 @@ export function LoginPage({ login = authService.login }: LoginPageProps) {
       browserTokenStorage.setTokens({ accessToken: access_token, refreshToken: refresh_token });
       setSession({ account, employee });
       navigate('/overview', { replace: true });
-    } catch {
-      setError(getVietnameseErrorMessage('INVALID_CREDENTIALS'));
+    } catch (caught) {
+      if (caught instanceof ApiError) {
+        setError(caught.userMessage);
+      } else {
+        setError(getVietnameseErrorMessage('NETWORK_ERROR'));
+      }
     } finally {
       setSubmitting(false);
     }
