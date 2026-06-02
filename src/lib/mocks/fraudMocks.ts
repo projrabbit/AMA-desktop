@@ -1,0 +1,36 @@
+import type { FraudRecordItem } from '@/types/api';
+
+export const mockFraudRecords: FraudRecordItem[] = [
+  {
+    fraud_id: 901,
+    record_id: 5012,
+    employee: { employee_id: 2, full_name: 'Minh Nguyễn', department_name: 'Kỹ thuật' },
+    attendance_type: 'checkin',
+    attendance_timestamp: '2026-05-24T08:32:00Z',
+    mock_location_detected: true,
+    gps_spoofing_detected: false,
+    buddy_punch_suspected: false,
+    unknown_device: false,
+    face_mismatch_detected: false,
+    liveness_failed: false,
+    confidence_score: 0.82,
+    reason: 'Phát hiện ứng dụng giả lập vị trí trên thiết bị',
+    checked_at: '2026-05-24T08:32:05Z',
+  },
+  {
+    fraud_id: 905,
+    record_id: 5018,
+    employee: { employee_id: 7, full_name: 'Lan Phạm', department_name: 'Nhân sự' },
+    attendance_type: 'checkout',
+    attendance_timestamp: '2026-05-24T17:46:00Z',
+    mock_location_detected: false,
+    gps_spoofing_detected: false,
+    buddy_punch_suspected: true,
+    unknown_device: true,
+    face_mismatch_detected: false,
+    liveness_failed: false,
+    confidence_score: 0.64,
+    reason: 'Chấm công từ thiết bị lạ, nghi ngờ chấm công hộ',
+    checked_at: '2026-05-24T17:46:08Z',
+  },
+];

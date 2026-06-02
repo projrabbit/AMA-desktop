@@ -1,5 +1,5 @@
 import type { ApiClient } from '@/lib/api/apiClient';
-import type { EmployeeInfo, MessageData } from '@/types/api';
+import type { CreateEmployeeData, EmployeeDetail, EmployeeListItem, MessageData } from '@/types/api';
 import { apiClient } from './apiClientInstance';
 
 export const employeeEndpoints = {
@@ -24,11 +24,11 @@ export interface EmployeeListParams {
 
 export function createEmployeeService(client: ApiClient = apiClient) {
   return {
-    list: (query?: EmployeeListParams) => client.get<EmployeeInfo[]>('/employees', { query }),
-    create: (body: Record<string, unknown>) => client.post<EmployeeInfo>('/employees', { body }),
-    detail: (employeeId: number) => client.get<EmployeeInfo>(`/employees/${employeeId}`),
+    list: (query?: EmployeeListParams) => client.get<EmployeeListItem[]>('/employees', { query }),
+    create: (body: Record<string, unknown>) => client.post<CreateEmployeeData>('/employees', { body }),
+    detail: (employeeId: number) => client.get<EmployeeDetail>(`/employees/${employeeId}`),
     update: (employeeId: number, body: Record<string, unknown>) =>
-      client.put<EmployeeInfo>(`/employees/${employeeId}`, { body }),
+      client.put<MessageData>(`/employees/${employeeId}`, { body }),
     deactivate: (employeeId: number, reason?: string) =>
       client.put<MessageData>(`/employees/${employeeId}/deactivate`, { body: { reason } }),
     assignShift: (employeeId: number, shiftId: number) =>
