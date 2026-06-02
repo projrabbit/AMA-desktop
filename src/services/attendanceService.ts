@@ -1,4 +1,5 @@
 import type { ApiClient } from '@/lib/api/apiClient';
+import type { ApproveData, AttendanceExceptionItem, AttendanceRecordDetail } from '@/types/api';
 import { apiClient } from './apiClientInstance';
 
 export const attendanceEndpoints = {
@@ -19,10 +20,10 @@ export interface AttendanceExceptionParams {
 export function createAttendanceService(client: ApiClient = apiClient) {
   return {
     exceptions: (query?: AttendanceExceptionParams) =>
-      client.get<Record<string, unknown>[]>('/attendance/exceptions', { query }),
-    detail: (recordId: number) => client.get<Record<string, unknown>>(`/attendance/${recordId}`),
+      client.get<AttendanceExceptionItem[]>('/attendance/exceptions', { query }),
+    detail: (recordId: number) => client.get<AttendanceRecordDetail>(`/attendance/${recordId}`),
     approve: (recordId: number, note?: string) =>
-      client.put<Record<string, unknown>>(`/attendance/${recordId}/approve`, { body: { note } }),
+      client.put<ApproveData>(`/attendance/${recordId}/approve`, { body: { note } }),
   };
 }
 

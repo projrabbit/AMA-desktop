@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 
 import { LoadingState, PageState } from '@/components/page-states/PageState';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { isMockMode } from '@/lib/config/env';
+import { mockDashboardSummary } from '@/lib/mocks';
 import { dashboardService } from '@/services/dashboardService';
 import type { ActiveLocationItem, DashboardSummaryData } from '@/types/api';
 
@@ -46,6 +48,17 @@ export function OverviewPage() {
     let cancelled = false;
 
     async function loadSummary(showInitialLoading: boolean) {
+      if (isMockMode()) {
+        if (!cancelled) {
+          setSummary(mockDashboardSummary);
+          setLoading(false);
+          setRefreshing(false);
+          setError(false);
+          setRefreshFailed(false);
+        }
+        return;
+      }
+
       if (showInitialLoading) {
         setLoading(true);
         setRefreshFailed(false);

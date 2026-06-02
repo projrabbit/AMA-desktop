@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
+import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/Button';
 import { browserTokenStorage } from '@/lib/api/tokenStorage';
 import { useSession } from '@/lib/auth/session';
@@ -57,6 +58,7 @@ export function DashboardLayout() {
             <h1>{pageTitle(location.pathname)}</h1>
           </div>
           <div className="dashboard-topbar__actions">
+            <NotificationBell />
             <span>Vai trò: {role ?? 'Chưa đăng nhập'}</span>
             <Button variant="ghost" onClick={handleLogout}>
               Đăng xuất

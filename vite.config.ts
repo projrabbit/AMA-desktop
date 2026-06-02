@@ -15,5 +15,10 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/test/setup.ts',
     css: true,
+    // Test chạy với dữ liệu thật (mock fallback do từng test tự dựng), không phụ thuộc .env demo.
+    env: {
+      VITE_USE_MOCK: 'false',
+      VITE_BYPASS_LOGIN: 'false',
+    },
   },
 });
