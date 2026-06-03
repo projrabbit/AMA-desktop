@@ -171,7 +171,7 @@ cp .env.example .env.local
 4. Update `.env.local` for your local environment.
 
 ```env
-VITE_API_BASE_URL=http://localhost:8000
+VITE_API_BASE_URL=/api/v1
 VITE_ARCGIS_API_KEY=
 VITE_ARCGIS_PORTAL_URL=https://www.arcgis.com
 VITE_ARCGIS_WEBSCENE_ID=
@@ -186,10 +186,10 @@ Environment notes:
 
 | Variable                         | Meaning                                                                                                             |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `VITE_API_BASE_URL`              | Backend base URL. The app appends `/api/v1` when it is not already present.                                         |
-| `VITE_ARCGIS_API_KEY`            | ArcGIS API key. Leave empty only when your map setup allows it.                                                     |
+| `VITE_API_BASE_URL`              | API base URL. Use `/api/v1` in development so Vite proxies requests to the local backend and LAN clients do not call their own `localhost`. Absolute backend URLs are still supported. |
+| `VITE_ARCGIS_API_KEY`            | ArcGIS API key. Leave empty for the default flat OSM map; set it when using protected ArcGIS basemaps, elevation, or WebScene resources. |
 | `VITE_ARCGIS_PORTAL_URL`         | ArcGIS portal URL. Defaults to `https://www.arcgis.com`.                                                            |
-| `VITE_ARCGIS_WEBSCENE_ID`        | Optional ArcGIS WebScene portal item ID. If empty, the app uses the default navigation basemap and world elevation. |
+| `VITE_ARCGIS_WEBSCENE_ID`        | Optional ArcGIS WebScene portal item ID. If empty, the app uses a flat OSM basemap.                                 |
 | `VITE_ARCGIS_DEFAULT_CENTER_LNG` | Default map center longitude.                                                                                       |
 | `VITE_ARCGIS_DEFAULT_CENTER_LAT` | Default map center latitude.                                                                                        |
 | `VITE_ARCGIS_DEFAULT_ZOOM`       | Default map zoom level.                                                                                             |

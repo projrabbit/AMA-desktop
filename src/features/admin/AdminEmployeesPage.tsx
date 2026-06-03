@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
 import { Input } from '@/components/ui/Input';
@@ -10,10 +9,8 @@ import { Select } from '@/components/ui/Select';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
 import { canPerform } from '@/lib/auth/permissions';
 import { useSession } from '@/lib/auth/session';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatDate } from '@/lib/format';
 import { getEmployeeStatusLabel, roleLabels } from '@/lib/i18n/labels';
-import { mockDepartments, mockEmployeeDetail, mockEmployeeList, mockShifts } from '@/lib/mocks';
 import { departmentService } from '@/services/departmentService';
 import { employeeService } from '@/services/employeeService';
 import { shiftService } from '@/services/shiftService';
@@ -49,7 +46,7 @@ export function AdminEmployeesPage() {
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [shifts, setShifts] = useState<ShiftItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
@@ -74,16 +71,21 @@ export function AdminEmployeesPage() {
 
   async function load() {
     setLoading(true);
-    const [empRes, deptRes, shiftRes] = await Promise.all([
-      withFallback(() => employeeService.list({ limit: 200 }), mockEmployeeList),
-      withFallback(() => departmentService.list(), mockDepartments),
-      withFallback(() => shiftService.list(), mockShifts),
-    ]);
-    setEmployees(empRes.data);
-    setDepartments(deptRes.data);
-    setShifts(shiftRes.data);
-    setUsedMock(empRes.usedMock || deptRes.usedMock || shiftRes.usedMock);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const [empRes, deptRes, shiftRes] = await Promise.all([
+        employeeService.list({ limit: 100 }),
+        departmentService.list(),
+        shiftService.list(),
+      ]);
+      setEmployees(empRes.data);
+      setDepartments(deptRes.data);
+      setShifts(shiftRes.data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -110,9 +112,14 @@ export function AdminEmployeesPage() {
     setDrawerOpen(true);
     setDetail(null);
     setFaceFile(null);
-    const { data } = await withFallback(() => employeeService.detail(employeeId), mockEmployeeDetail);
-    setDetail(data);
-    setAssignShiftId(data.shift ? String(data.shift.shift_id) : '');
+    try {
+      const { data } = await employeeService.detail(employeeId);
+      setDetail(data);
+      setAssignShiftId(data.shift ? String(data.shift.shift_id) : '');
+    } catch (error) {
+      setNotice(getErrorMessage(error));
+      setDrawerOpen(false);
+    }
   }
 
   async function submitCreate(event: FormEvent) {
@@ -235,6 +242,10 @@ export function AdminEmployeesPage() {
     return <LoadingState />;
   }
 
+  if (loadError) {
+    return <ErrorState />;
+  }
+
   return (
     <section className="screen-stack">
       <AdminNav />
@@ -245,7 +256,6 @@ export function AdminEmployeesPage() {
           <p>Quản lý hồ sơ nhân viên, tài khoản đăng nhập, ca làm việc và đăng ký khuôn mặt.</p>
         </div>
         <div className="screen-header__actions">
-          <MockDataBadge visible={usedMock} />
           <Button onClick={() => setCreateOpen(true)}>+ Thêm nhân viên</Button>
         </div>
       </header>
