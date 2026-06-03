@@ -54,7 +54,7 @@ export function AdminShiftsPage() {
       setLoadError(false);
       const [shiftRes, empRes] = await Promise.all([
         shiftService.list(),
-        employeeService.list({ limit: 200 }),
+        employeeService.list({ limit: 100 }),
       ]);
       setShifts(shiftRes.data);
       setEmployees(empRes.data);

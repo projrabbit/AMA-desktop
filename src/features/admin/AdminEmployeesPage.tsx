@@ -74,7 +74,7 @@ export function AdminEmployeesPage() {
     try {
       setLoadError(false);
       const [empRes, deptRes, shiftRes] = await Promise.all([
-        employeeService.list({ limit: 200 }),
+        employeeService.list({ limit: 100 }),
         departmentService.list(),
         shiftService.list(),
       ]);

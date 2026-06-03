@@ -41,7 +41,7 @@ export function AdminDevicesPage() {
     setLoading(true);
     try {
       setLoadError(false);
-      const { data } = await deviceService.list({ limit: 200 });
+      const { data } = await deviceService.list({ limit: 100 });
       setDevices(data);
     } catch {
       setLoadError(true);

@@ -24,16 +24,17 @@ export function AdminPage() {
       try {
         setLoadError(false);
         const [empRes, deptRes, shiftRes, deviceRes] = await Promise.all([
-          employeeService.list({ limit: 200 }),
+          employeeService.list({ limit: 100 }),
           departmentService.list(),
           shiftService.list(),
-          deviceService.list({ limit: 200 }),
+          deviceService.list({ limit: 100 }),
         ]);
         setEmployees(empRes.data);
         setDepartments(deptRes.data);
         setShifts(shiftRes.data);
         setDevices(deviceRes.data);
-      } catch {
+      } catch (error) {
+        console.error('AdminPage load failed', error);
         setLoadError(true);
       } finally {
         setLoading(false);

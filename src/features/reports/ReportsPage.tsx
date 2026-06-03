@@ -43,7 +43,7 @@ export function ReportsPage() {
       try {
         const [deptRes, empRes] = await Promise.all([
           departmentService.list(),
-          employeeService.list({ limit: 200 }),
+          employeeService.list({ limit: 100 }),
         ]);
         setDepartments(deptRes.data);
         setEmployees(empRes.data);
