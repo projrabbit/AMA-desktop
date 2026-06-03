@@ -70,7 +70,9 @@ export async function createSceneView({
   const buildingMarkerLayer = new GraphicsLayer({ title: 'Tòa nhà (điểm)' }) as GraphicsLayerLike;
   const building3dLayer = new GraphicsLayer({
     title: 'Tòa nhà 3D AMA',
-    elevationInfo: { mode: 'absolute' },
+    // 'absolute-height' places each floor at its real baseZ so floors stack;
+    // ArcGIS rejects the bare value 'absolute'.
+    elevationInfo: { mode: 'absolute-height' },
   }) as GraphicsLayerLike;
   // Employee locations are the page's primary purpose: always visible, no toggle.
   const employeeLayer = new GraphicsLayer({ title: 'Nhân viên (thời gian thực)' }) as GraphicsLayerLike;

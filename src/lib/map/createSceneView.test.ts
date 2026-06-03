@@ -4,7 +4,7 @@ const arcgisMocks = vi.hoisted(() => {
   const createdGraphics: unknown[] = [];
   const createdPoints: unknown[] = [];
   const createdCircles: { center: unknown; radius: number; radiusUnit: string }[] = [];
-  const layers: { title: string; visible: boolean; graphics: unknown[] }[] = [];
+  const layers: { title: string; visible: boolean; graphics: unknown[]; elevationInfo?: { mode?: string } }[] = [];
   const values = {
     config: {},
     createdCircles,
@@ -39,8 +39,10 @@ const arcgisMocks = vi.hoisted(() => {
     title: string;
     visible = true;
     graphics: unknown[] = [];
-    constructor(options: { title?: string }) {
+    elevationInfo: { mode?: string } | undefined;
+    constructor(options: { title?: string; elevationInfo?: { mode?: string } }) {
       this.title = options?.title ?? '';
+      this.elevationInfo = options?.elevationInfo;
       layers.push(this);
     }
     addMany(graphics: unknown[]) {
@@ -141,6 +143,8 @@ describe('createSceneView', () => {
     expect(arcgisMocks.map).toHaveBeenCalledWith({ basemap: 'osm' });
     expect(layerByTitle('geofence')).toBeDefined();
     expect(layerByTitle('Tòa nhà 3D')).toBeDefined();
+    // ArcGIS only accepts 'absolute-height' (not 'absolute') for absolute elevation.
+    expect(layerByTitle('Tòa nhà 3D')?.elevationInfo?.mode).toBe('absolute-height');
 
     // 1 geofence circle + 2 floor footprint circles = 3 circles total.
     expect(arcgisMocks.createdCircles).toHaveLength(3);
