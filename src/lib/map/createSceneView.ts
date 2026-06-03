@@ -1,6 +1,13 @@
 import type { ArcgisRuntimeConfig } from './arcgisConfig';
+import { buildFloorExtrusions, DEFAULT_FOOTPRINT_RADIUS_M } from './buildingVolumes';
 import { loadArcgisCoreModules } from './arcgisSdkLoader';
-import type { ArcgisSceneHandle, MapBuilding, MapGeofence, MapPoint } from './types';
+import type {
+  ArcgisSceneHandle,
+  MapBuilding,
+  MapGeofence,
+  MapPoint,
+  SceneLayerVisibility,
+} from './types';
 
 export interface CreateSceneViewOptions {
   container: HTMLDivElement;
@@ -8,9 +15,11 @@ export interface CreateSceneViewOptions {
   points?: MapPoint[];
   buildings?: MapBuilding[];
   geofences?: MapGeofence[];
+  visibility?: SceneLayerVisibility;
 }
 
 interface GraphicsLayerLike {
+  visible: boolean;
   addMany(graphics: unknown[]): void;
 }
 
@@ -23,14 +32,19 @@ interface ViewLike {
   when(): Promise<void>;
 }
 
+// Subtle blue → amber ramp so stacked floors read as distinct slabs.
+const FLOOR_COLORS = [
+  [37, 99, 235, 0.55],
+  [16, 185, 129, 0.55],
+  [245, 158, 11, 0.55],
+  [139, 92, 246, 0.55],
+];
+
 function floorSummary(building: MapBuilding): string {
   if (!building.floors || building.floors.length === 0) {
     return 'Chưa có dữ liệu tầng.';
   }
-
-  return building.floors
-    .map((floor) => `${floor.name}: ${floor.altitudeMin}-${floor.altitudeMax} m`)
-    .join('<br />');
+  return building.floors.map((floor) => `${floor.name}: ${floor.altitudeMin}-${floor.altitudeMax} m`).join('<br />');
 }
 
 export async function createSceneView({
@@ -39,6 +53,7 @@ export async function createSceneView({
   points = [],
   buildings = [],
   geofences = [],
+  visibility,
 }: CreateSceneViewOptions): Promise<ArcgisSceneHandle> {
   const { config: esriConfig, Graphic, Point, Circle, GraphicsLayer, Map: ArcgisMap, WebScene, SceneView } =
     await loadArcgisCoreModules();
@@ -48,9 +63,19 @@ export async function createSceneView({
   }
   esriConfig.portalUrl = config.portalUrl;
 
-  const graphicsLayer = new GraphicsLayer({ title: 'Dữ liệu chấm công 3D AMA' }) as GraphicsLayerLike;
-  const graphics = [
-    ...geofences.map(
+  const showGeofences = visibility?.geofences ?? true;
+  const showBuildings3d = visibility?.buildings3d ?? false;
+
+  const geofenceLayer = new GraphicsLayer({ title: 'Vùng geofence AMA' }) as GraphicsLayerLike;
+  const buildingMarkerLayer = new GraphicsLayer({ title: 'Tòa nhà (điểm)' }) as GraphicsLayerLike;
+  const building3dLayer = new GraphicsLayer({
+    title: 'Tòa nhà 3D AMA',
+    elevationInfo: { mode: 'absolute' },
+  }) as GraphicsLayerLike;
+  const employeeLayer = new GraphicsLayer({ title: 'Nhân viên (thời gian thực)' }) as GraphicsLayerLike;
+
+  geofenceLayer.addMany(
+    geofences.map(
       (geofence) =>
         new Graphic({
           geometry: new Circle({
@@ -82,7 +107,10 @@ export async function createSceneView({
           },
         }),
     ),
-    ...buildings.map(
+  );
+
+  buildingMarkerLayer.addMany(
+    buildings.map(
       (building) =>
         new Graphic({
           geometry: new Point({
@@ -110,7 +138,42 @@ export async function createSceneView({
           },
         }),
     ),
-    ...points.map(
+  );
+
+  const buildingGraphics = buildings.flatMap((building) =>
+    buildFloorExtrusions(building).map(
+      (floor) =>
+        new Graphic({
+          geometry: new Circle({
+            center: [building.longitude, building.latitude, floor.baseZ],
+            geodesic: true,
+            numberOfPoints: 48,
+            radius: DEFAULT_FOOTPRINT_RADIUS_M,
+            radiusUnit: 'meters',
+          }),
+          attributes: { building: building.name, floor: floor.label },
+          symbol: {
+            type: 'polygon-3d',
+            symbolLayers: [
+              {
+                type: 'extrude',
+                size: floor.height,
+                material: { color: FLOOR_COLORS[floor.colorIndex % FLOOR_COLORS.length] },
+                edges: { type: 'solid', color: [30, 41, 59, 0.6], size: 0.5 },
+              },
+            ],
+          },
+          popupTemplate: {
+            title: `${building.name} — ${floor.label}`,
+            content: `Độ cao đáy: ${floor.baseZ} m<br />Chiều cao: ${floor.height} m`,
+          },
+        }),
+    ),
+  );
+  building3dLayer.addMany(buildingGraphics);
+
+  employeeLayer.addMany(
+    points.map(
       (point) =>
         new Graphic({
           geometry: new Point({
@@ -131,15 +194,21 @@ export async function createSceneView({
           },
         }),
     ),
-  ];
+  );
 
-  graphicsLayer.addMany(graphics);
+  geofenceLayer.visible = showGeofences;
+  buildingMarkerLayer.visible = showGeofences;
+  building3dLayer.visible = showBuildings3d;
 
   const map = config.webSceneId
     ? new WebScene({ portalItem: { id: config.webSceneId } })
     : new ArcgisMap({ basemap: 'osm' });
 
-  (map as MapLike).add(graphicsLayer);
+  const mapLike = map as MapLike;
+  mapLike.add(geofenceLayer);
+  mapLike.add(buildingMarkerLayer);
+  mapLike.add(building3dLayer);
+  mapLike.add(employeeLayer);
 
   const view = new SceneView({
     container,
@@ -159,5 +228,14 @@ export async function createSceneView({
 
   return {
     destroy: () => view.destroy(),
+    setLayerVisibility: ({ geofences: nextGeofences, buildings3d: nextBuildings3d }) => {
+      if (nextGeofences !== undefined) {
+        geofenceLayer.visible = nextGeofences;
+        buildingMarkerLayer.visible = nextGeofences;
+      }
+      if (nextBuildings3d !== undefined) {
+        building3dLayer.visible = nextBuildings3d;
+      }
+    },
   };
 }

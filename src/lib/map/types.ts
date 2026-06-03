@@ -37,6 +37,12 @@ export interface MapGeofence {
   isActive: boolean;
 }
 
+export interface SceneLayerVisibility {
+  geofences?: boolean;
+  buildings3d?: boolean;
+}
+
 export interface ArcgisSceneHandle {
   destroy(): void;
+  setLayerVisibility(visibility: SceneLayerVisibility): void;
 }
