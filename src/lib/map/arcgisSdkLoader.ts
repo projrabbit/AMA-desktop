@@ -6,6 +6,7 @@ const MODULE_IDS = [
   '@arcgis/core/Graphic.js',
   '@arcgis/core/geometry/Point.js',
   '@arcgis/core/geometry/Circle.js',
+  '@arcgis/core/geometry/Polygon.js',
   '@arcgis/core/layers/GraphicsLayer.js',
   '@arcgis/core/Map.js',
   '@arcgis/core/WebScene.js',
@@ -19,6 +20,7 @@ export interface ArcgisCoreModules {
   Graphic: ArcgisConstructor;
   Point: ArcgisConstructor;
   Circle: ArcgisConstructor;
+  Polygon: ArcgisConstructor;
   GraphicsLayer: ArcgisConstructor;
   Map: ArcgisConstructor;
   WebScene: ArcgisConstructor;
@@ -67,7 +69,7 @@ export function loadArcgisCoreModules(): Promise<ArcgisCoreModules> {
       throw new Error('ARCGIS_IMPORT_UNAVAILABLE');
     }
 
-    const [config, Graphic, Point, Circle, GraphicsLayer, Map, WebScene, SceneView] =
+    const [config, Graphic, Point, Circle, Polygon, GraphicsLayer, Map, WebScene, SceneView] =
       await window.$arcgis.import<unknown[]>([...MODULE_IDS]);
 
     return {
@@ -75,6 +77,7 @@ export function loadArcgisCoreModules(): Promise<ArcgisCoreModules> {
       Graphic: Graphic as ArcgisConstructor,
       Point: Point as ArcgisConstructor,
       Circle: Circle as ArcgisConstructor,
+      Polygon: Polygon as ArcgisConstructor,
       GraphicsLayer: GraphicsLayer as ArcgisConstructor,
       Map: Map as ArcgisConstructor,
       WebScene: WebScene as ArcgisConstructor,

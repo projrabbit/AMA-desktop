@@ -12,7 +12,7 @@ describe('arcgis SDK loader', () => {
   });
 
   it('uses the existing ArcGIS CDN global without injecting another script', async () => {
-    const importImpl = vi.fn().mockResolvedValue(['config', 'Graphic', 'Point', 'Circle', 'GraphicsLayer', 'Map', 'WebScene', 'SceneView']);
+    const importImpl = vi.fn().mockResolvedValue(['config', 'Graphic', 'Point', 'Circle', 'Polygon', 'GraphicsLayer', 'Map', 'WebScene', 'SceneView']);
     setArcgisImport(importImpl);
     const { loadArcgisCoreModules } = await import('./arcgisSdkLoader');
 
@@ -23,6 +23,7 @@ describe('arcgis SDK loader', () => {
       '@arcgis/core/Graphic.js',
       '@arcgis/core/geometry/Point.js',
       '@arcgis/core/geometry/Circle.js',
+      '@arcgis/core/geometry/Polygon.js',
       '@arcgis/core/layers/GraphicsLayer.js',
       '@arcgis/core/Map.js',
       '@arcgis/core/WebScene.js',
@@ -38,7 +39,7 @@ describe('arcgis SDK loader', () => {
     const first = loadArcgisCoreModules();
     const second = loadArcgisCoreModules();
     const script = document.querySelector<HTMLScriptElement>('script[src="https://js.arcgis.com/5.0/"]');
-    const importImpl = vi.fn().mockResolvedValue(['config', 'Graphic', 'Point', 'Circle', 'GraphicsLayer', 'Map', 'WebScene', 'SceneView']);
+    const importImpl = vi.fn().mockResolvedValue(['config', 'Graphic', 'Point', 'Circle', 'Polygon', 'GraphicsLayer', 'Map', 'WebScene', 'SceneView']);
 
     expect(script).not.toBeNull();
     expect(script?.type).toBe('module');

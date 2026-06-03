@@ -17,6 +17,7 @@ const arcgisMocks = vi.hoisted(() => {
     mapAdd: vi.fn(),
     sceneView: vi.fn(),
     sceneViewWhen: vi.fn(() => Promise.resolve()),
+    sceneViewGoTo: vi.fn(() => Promise.resolve()),
     webScene: vi.fn(),
   };
 
@@ -28,6 +29,14 @@ const arcgisMocks = vi.hoisted(() => {
   class MockPoint {
     constructor(options: unknown) {
       createdPoints.push(options);
+    }
+  }
+  class MockPolygon {
+    type = 'polygon';
+    rings?: number[][][];
+    hasZ?: boolean;
+    constructor(options: { rings?: number[][][]; hasZ?: boolean }) {
+      Object.assign(this, options);
     }
   }
   class MockCircle {
@@ -67,9 +76,10 @@ const arcgisMocks = vi.hoisted(() => {
     }
     destroy = values.destroy;
     when = values.sceneViewWhen;
+    goTo = values.sceneViewGoTo;
   }
 
-  return { ...values, MockCircle, MockGraphic, MockGraphicsLayer, MockMap, MockPoint, MockSceneView, MockWebScene };
+  return { ...values, MockCircle, MockPolygon, MockGraphic, MockGraphicsLayer, MockMap, MockPoint, MockSceneView, MockWebScene };
 });
 
 vi.mock('./arcgisSdkLoader', () => ({ loadArcgisCoreModules: arcgisMocks.loadArcgisCoreModules }));
@@ -92,6 +102,7 @@ describe('createSceneView', () => {
       Graphic: arcgisMocks.MockGraphic,
       Point: arcgisMocks.MockPoint,
       Circle: arcgisMocks.MockCircle,
+      Polygon: arcgisMocks.MockPolygon,
       GraphicsLayer: arcgisMocks.MockGraphicsLayer,
       Map: arcgisMocks.MockMap,
       WebScene: arcgisMocks.MockWebScene,
@@ -146,14 +157,23 @@ describe('createSceneView', () => {
     // ArcGIS only accepts 'absolute-height' (not 'absolute') for absolute elevation.
     expect(layerByTitle('Tòa nhà 3D')?.elevationInfo?.mode).toBe('absolute-height');
 
-    // 1 geofence circle + 2 floor footprint circles = 3 circles total.
-    expect(arcgisMocks.createdCircles).toHaveLength(3);
-    const footprintCircles = arcgisMocks.createdCircles.filter((circle) => circle.radius === 20);
-    expect(footprintCircles).toHaveLength(2);
+    // Only the geofence is a Circle now; building footprints are extruded box polygons.
+    expect(arcgisMocks.createdCircles).toHaveLength(1);
+    const extrusions = arcgisMocks.createdGraphics.filter(
+      (g) => (g as { symbol?: { type?: string } }).symbol?.type === 'polygon-3d',
+    );
+    expect(extrusions).toHaveLength(2); // one slab per floor
+    const firstGeom = (extrusions[0] as { geometry?: { type?: string; hasZ?: boolean; rings?: number[][][] } }).geometry;
+    expect(firstGeom?.type).toBe('polygon');
+    expect(firstGeom?.hasZ).toBe(true);
+    expect(firstGeom?.rings?.[0]).toHaveLength(5); // closed square ring
 
     // 1 employee point + 1 building marker point = 2 Point graphics.
     const employeeAndMarkerPoints = arcgisMocks.createdPoints.filter(Boolean);
     expect(employeeAndMarkerPoints).toHaveLength(2);
+
+    // Camera frames the building(s) rather than the env default centre.
+    expect(arcgisMocks.sceneViewGoTo).toHaveBeenCalled();
   });
 
   it('initialises layer visibility from options and toggles it without rebuilding', async () => {
