@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { withFallback } from '@/lib/data/withFallback';
 import { formatDateTime } from '@/lib/format';
 import { getNotificationTypeLabel } from '@/lib/i18n/labels';
-import { mockNotifications } from '@/lib/mocks';
 import { notificationService } from '@/services/notificationService';
 import type { NotificationItem } from '@/types/api';
 
@@ -13,8 +11,12 @@ export function NotificationBell() {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   async function load() {
-    const { data } = await withFallback(() => notificationService.list({ limit: 20 }), mockNotifications);
-    setItems(data);
+    try {
+      const { data } = await notificationService.list({ limit: 20 });
+      setItems(data);
+    } catch {
+      setItems([]);
+    }
   }
 
   useEffect(() => {

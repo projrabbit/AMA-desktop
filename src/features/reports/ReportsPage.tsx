@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
 import { Button } from '@/components/ui/Button';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { Select } from '@/components/ui/Select';
@@ -8,10 +7,8 @@ import { downloadBlob } from '@/lib/api/downloadBlob';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
 import { canPerform } from '@/lib/auth/permissions';
 import { useSession } from '@/lib/auth/session';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatDate, formatHoursFromMinutes, formatNumber, formatTime } from '@/lib/format';
 import { getAttendanceStatusLabel } from '@/lib/i18n/labels';
-import { mockAttendanceReport, mockDepartments, mockEmployeeList } from '@/lib/mocks';
 import { departmentService } from '@/services/departmentService';
 import { employeeService } from '@/services/employeeService';
 import { reportService } from '@/services/reportService';
@@ -37,19 +34,22 @@ export function ReportsPage() {
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
   const [report, setReport] = useState<AttendanceReportData | null>(null);
-  const [usedMock, setUsedMock] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
 
   useEffect(() => {
     async function loadFilters() {
-      const [deptRes, empRes] = await Promise.all([
-        withFallback(() => departmentService.list(), mockDepartments),
-        withFallback(() => employeeService.list({ limit: 200 }), mockEmployeeList),
-      ]);
-      setDepartments(deptRes.data);
-      setEmployees(empRes.data);
+      try {
+        const [deptRes, empRes] = await Promise.all([
+          departmentService.list(),
+          employeeService.list({ limit: 200 }),
+        ]);
+        setDepartments(deptRes.data);
+        setEmployees(empRes.data);
+      } catch (err) {
+        setError(getErrorMessage(err, 'Không thể tải bộ lọc báo cáo.'));
+      }
     }
     void loadFilters();
     void runReport();
@@ -76,13 +76,15 @@ export function ReportsPage() {
     }
     setError(null);
     setLoading(true);
-    const { data, usedMock: mock } = await withFallback(
-      () => reportService.attendance(buildParams()),
-      mockAttendanceReport,
-    );
-    setReport(data);
-    setUsedMock(mock);
-    setLoading(false);
+    try {
+      const { data } = await reportService.attendance(buildParams());
+      setReport(data);
+    } catch (err) {
+      setReport(null);
+      setError(getErrorMessage(err, 'Không thể tải báo cáo. Vui lòng thử lại.'));
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleExport(format: ExportFormat) {
@@ -108,7 +110,6 @@ export function ReportsPage() {
           <h2>Báo cáo chấm công</h2>
           <p>Xem báo cáo theo khoảng thời gian, phòng ban, nhân viên và xuất file Excel/PDF.</p>
         </div>
-        <MockDataBadge visible={usedMock} />
       </header>
 
       <div className="filter-bar">

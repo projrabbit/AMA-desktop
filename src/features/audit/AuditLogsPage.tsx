@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatDateTime } from '@/lib/format';
 import { auditActionLabels, getAuditActionLabel } from '@/lib/i18n/labels';
-import { mockAuditLogs } from '@/lib/mocks';
 import { auditLogService } from '@/services/auditLogService';
 import type { AuditLogItem, AuditLogListData } from '@/types/api';
 
@@ -19,7 +16,7 @@ const PAGE_SIZE = 20;
 export function AuditLogsPage() {
   const [data, setData] = useState<AuditLogListData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const [actor, setActor] = useState('');
   const [actionType, setActionType] = useState(ALL);
@@ -41,16 +38,15 @@ export function AuditLogsPage() {
       limit: PAGE_SIZE,
       offset: nextOffset,
     };
-    const fallback: AuditLogListData = {
-      items: mockAuditLogs,
-      total: mockAuditLogs.length,
-      limit: PAGE_SIZE,
-      offset: 0,
-    };
-    const { data: result, usedMock: mock } = await withFallback(() => auditLogService.list(query), fallback);
-    setData(result);
-    setUsedMock(mock);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const { data: result } = await auditLogService.list(query);
+      setData(result);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -73,6 +69,10 @@ export function AuditLogsPage() {
     return <LoadingState />;
   }
 
+  if (loadError && !data) {
+    return <ErrorState />;
+  }
+
   const items = data?.items ?? [];
   const total = data?.total ?? items.length;
   const pageStart = total === 0 ? 0 : offset + 1;
@@ -85,7 +85,6 @@ export function AuditLogsPage() {
           <h2>Tra cứu nhật ký hệ thống</h2>
           <p>Lịch sử thao tác để kiểm tra và truy vết. Màn hình chỉ đọc, không có chỉnh sửa hoặc xóa.</p>
         </div>
-        <MockDataBadge visible={usedMock} />
       </header>
 
       <div className="filter-bar">

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -9,10 +8,8 @@ import { Select } from '@/components/ui/Select';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
 import { canPerform } from '@/lib/auth/permissions';
 import { useSession } from '@/lib/auth/session';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatDateTime } from '@/lib/format';
 import { devicePlatformLabels, getDevicePlatformLabel } from '@/lib/i18n/labels';
-import { mockDevices } from '@/lib/mocks';
 import { deviceService } from '@/services/deviceService';
 import type { DeviceItem } from '@/types/api';
 import { AdminNav } from './AdminNav';
@@ -30,7 +27,7 @@ export function AdminDevicesPage() {
 
   const [devices, setDevices] = useState<DeviceItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
@@ -42,10 +39,15 @@ export function AdminDevicesPage() {
 
   async function load() {
     setLoading(true);
-    const { data, usedMock: mock } = await withFallback(() => deviceService.list({ limit: 200 }), mockDevices);
-    setDevices(data);
-    setUsedMock(mock);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const { data } = await deviceService.list({ limit: 200 });
+      setDevices(data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -84,6 +86,10 @@ export function AdminDevicesPage() {
     return <LoadingState />;
   }
 
+  if (loadError) {
+    return <ErrorState />;
+  }
+
   return (
     <section className="screen-stack">
       <AdminNav />
@@ -93,7 +99,6 @@ export function AdminDevicesPage() {
           <h2>Quản trị thiết bị tin cậy</h2>
           <p>Duyệt thiết bị mới và thu hồi thiết bị không còn được tin cậy dùng cho chấm công.</p>
         </div>
-        <MockDataBadge visible={usedMock} />
       </header>
 
       {notice ? (

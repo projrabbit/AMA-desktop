@@ -11,8 +11,12 @@ describe('environment helpers', () => {
     expect(getApiBaseUrl('http://localhost:8000/api/v1/')).toBe('http://localhost:8000/api/v1');
   });
 
-  it('falls back to localhost when the API base URL is empty', () => {
-    expect(getApiBaseUrl('')).toBe('http://localhost:8000/api/v1');
+  it('falls back to same-origin API when the API base URL is empty', () => {
+    expect(getApiBaseUrl('')).toBe('/api/v1');
+  });
+
+  it('keeps same-origin API base URLs intact', () => {
+    expect(getApiBaseUrl('/api/v1')).toBe('/api/v1');
   });
 
   it('normalizes ArcGIS numeric config', () => {

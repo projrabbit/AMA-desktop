@@ -1,15 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatClock } from '@/lib/format';
-import { mockEmployeeList, mockShifts } from '@/lib/mocks';
 import { employeeService } from '@/services/employeeService';
 import { shiftService } from '@/services/shiftService';
 import type { EmployeeListItem, ShiftItem } from '@/types/api';
@@ -39,7 +36,7 @@ export function AdminShiftsPage() {
   const [shifts, setShifts] = useState<ShiftItem[]>([]);
   const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -53,14 +50,19 @@ export function AdminShiftsPage() {
 
   async function load() {
     setLoading(true);
-    const [shiftRes, empRes] = await Promise.all([
-      withFallback(() => shiftService.list(), mockShifts),
-      withFallback(() => employeeService.list({ limit: 200 }), mockEmployeeList),
-    ]);
-    setShifts(shiftRes.data);
-    setEmployees(empRes.data);
-    setUsedMock(shiftRes.usedMock || empRes.usedMock);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const [shiftRes, empRes] = await Promise.all([
+        shiftService.list(),
+        employeeService.list({ limit: 200 }),
+      ]);
+      setShifts(shiftRes.data);
+      setEmployees(empRes.data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -142,6 +144,10 @@ export function AdminShiftsPage() {
     return <LoadingState />;
   }
 
+  if (loadError) {
+    return <ErrorState />;
+  }
+
   return (
     <section className="screen-stack">
       <AdminNav />
@@ -152,7 +158,6 @@ export function AdminShiftsPage() {
           <p>Tạo, sửa ca làm và gán ca cho nhân viên. Mỗi ca được khai báo theo nhân viên áp dụng.</p>
         </div>
         <div className="screen-header__actions">
-          <MockDataBadge visible={usedMock} />
           <Button onClick={openCreate}>+ Thêm ca</Button>
         </div>
       </header>

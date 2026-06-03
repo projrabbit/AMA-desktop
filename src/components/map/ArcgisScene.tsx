@@ -2,15 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 
 import { buildArcgisRuntimeConfig } from '@/lib/map/arcgisConfig';
 import { createSceneView } from '@/lib/map/createSceneView';
-import type { ArcgisSceneHandle, MapPoint } from '@/lib/map/types';
+import type { ArcgisSceneHandle, MapBuilding, MapGeofence, MapPoint } from '@/lib/map/types';
 
 interface ArcgisSceneProps {
   title: string;
   points?: MapPoint[];
+  buildings?: MapBuilding[];
+  geofences?: MapGeofence[];
   className?: string;
 }
 
-export function ArcgisScene({ title, points = [], className }: ArcgisSceneProps) {
+export function ArcgisScene({ title, points = [], buildings = [], geofences = [], className }: ArcgisSceneProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const handleRef = useRef<ArcgisSceneHandle | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,13 @@ export function ArcgisScene({ title, points = [], className }: ArcgisSceneProps)
           container: containerRef.current,
           config: buildArcgisRuntimeConfig(),
           points,
+          buildings,
+          geofences,
         });
+        if (cancelled) {
+          handleRef.current.destroy();
+          handleRef.current = null;
+        }
       } catch {
         if (!cancelled) {
           setError('Không thể tải bản đồ ArcGIS. Vui lòng kiểm tra cấu hình bản đồ.');
@@ -43,7 +51,7 @@ export function ArcgisScene({ title, points = [], className }: ArcgisSceneProps)
       handleRef.current?.destroy();
       handleRef.current = null;
     };
-  }, [points]);
+  }, [points, buildings, geofences]);
 
   return (
     <section className={className} aria-label={title} role="region">

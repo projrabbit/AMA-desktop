@@ -1,37 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { ArcgisScene } from '@/components/map/ArcgisScene';
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Select } from '@/components/ui/Select';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatTime } from '@/lib/format';
-import { mockRealtimeLocations } from '@/lib/mocks';
+import { mapBuildingToScene, mapGeofenceToScene, mapLocationToScenePoint } from '@/lib/map/gisMappers';
+import { buildingService } from '@/services/buildingService';
+import { geofenceService } from '@/services/geofenceService';
 import { realtimeService } from '@/services/realtimeService';
-import type { RealtimeLocationItem } from '@/types/api';
+import type { BuildingItem, GeofenceItem, RealtimeLocationItem } from '@/types/api';
 
 const POLL_INTERVAL_MS = 30_000;
 const ALL = '';
 
-function distinctOptions(
-  items: RealtimeLocationItem[],
-  idKey: 'building_id' | 'floor_id',
-  labelKey: 'building_name' | 'floor_name',
-): { label: string; value: string }[] {
-  const map = new Map<string, string>();
-  for (const item of items) {
-    const id = item[idKey];
-    if (id !== null && id !== undefined) {
-      map.set(String(id), item[labelKey] ?? `#${id}`);
-    }
-  }
-  return [...map.entries()].map(([value, label]) => ({ value, label }));
+function numberFilter(value: string): number | undefined {
+  return value === ALL ? undefined : Number(value);
 }
 
 export function MapPage() {
   const [locations, setLocations] = useState<RealtimeLocationItem[]>([]);
+  const [buildings, setBuildings] = useState<BuildingItem[]>([]);
+  const [geofences, setGeofences] = useState<GeofenceItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [building, setBuilding] = useState(ALL);
   const [floor, setFloor] = useState(ALL);
   const [department, setDepartment] = useState(ALL);
@@ -44,14 +35,33 @@ export function MapPage() {
       if (initial) {
         setLoading(true);
       }
-      const { data, usedMock: mock } = await withFallback(
-        () => realtimeService.locations(),
-        mockRealtimeLocations,
-      );
-      if (!cancelled) {
-        setLocations(data);
-        setUsedMock(mock);
-        setLoading(false);
+      try {
+        setLoadError(false);
+        const buildingId = numberFilter(building);
+        const floorId = numberFilter(floor);
+        const departmentId = numberFilter(department);
+        const [locationRes, buildingRes, geofenceRes] = await Promise.all([
+          realtimeService.locations({ building_id: buildingId, floor_id: floorId, department_id: departmentId }),
+          buildingService.list({ include_floors: true }),
+          geofenceService.list({
+            ...(buildingId !== undefined ? { building_id: buildingId } : {}),
+            ...(floorId !== undefined ? { floor_id: floorId } : {}),
+            is_active: true,
+          }),
+        ]);
+        if (!cancelled) {
+          setLocations(locationRes.data);
+          setBuildings(buildingRes.data);
+          setGeofences(geofenceRes.data);
+        }
+      } catch {
+        if (!cancelled) {
+          setLoadError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -61,30 +71,61 @@ export function MapPage() {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [building, floor, department]);
 
-  const buildingOptions = useMemo(() => distinctOptions(locations, 'building_id', 'building_name'), [locations]);
-  const floorOptions = useMemo(() => distinctOptions(locations, 'floor_id', 'floor_name'), [locations]);
+  const buildingOptions = useMemo(
+    () => buildings.map((item) => ({ value: String(item.building_id), label: item.name })),
+    [buildings],
+  );
+  const floorOptions = useMemo(
+    () =>
+      buildings
+        .filter((item) => building === ALL || String(item.building_id) === building)
+        .flatMap((item) =>
+          (item.floors ?? []).map((floorItem) => ({
+            value: String(floorItem.floor_id),
+            label: `${item.name} • ${floorItem.floor_name}`,
+          })),
+        ),
+    [buildings, building],
+  );
   const departmentOptions = useMemo(() => {
-    const set = new Set(locations.map((item) => item.department_name).filter(Boolean));
-    return [...set].map((name) => ({ value: name, label: name }));
+    const map = new Map<number, string>();
+    for (const item of locations) {
+      map.set(item.department_id, item.department_name);
+    }
+    return [...map.entries()].map(([value, label]) => ({ value: String(value), label }));
   }, [locations]);
 
   const filtered = useMemo(
     () =>
       locations.filter(
-        (item) =>
-          (building === ALL || String(item.building_id) === building) &&
-          (floor === ALL || String(item.floor_id) === floor) &&
-          (department === ALL || item.department_name === department),
+          (item) =>
+            (building === ALL || String(item.building_id) === building) &&
+            (floor === ALL || String(item.floor_id) === floor) &&
+            (department === ALL || String(item.department_id) === department),
       ),
     [locations, building, floor, department],
+  );
+  const sceneGeofences = useMemo(
+    () =>
+      geofences.filter(
+        (item) =>
+          item.is_active &&
+          (building === ALL || String(item.building_id ?? '') === building) &&
+          (floor === ALL || String(item.floor_id) === floor),
+      ),
+    [geofences, building, floor],
   );
 
   const selected = filtered.find((item) => item.employee_id === selectedId) ?? null;
 
   if (loading) {
     return <LoadingState />;
+  }
+
+  if (loadError) {
+    return <ErrorState />;
   }
 
   return (
@@ -94,7 +135,6 @@ export function MapPage() {
           <h2>Bản đồ 3D theo thời gian gần thực</h2>
           <p>Vị trí nhân viên đang làm việc, tự cập nhật mỗi 30 giây từ các lượt chấm công hợp lệ.</p>
         </div>
-        <MockDataBadge visible={usedMock} />
       </header>
 
       <div className="filter-bar">
@@ -122,14 +162,9 @@ export function MapPage() {
         <div className="screen-stack">
           <ArcgisScene
             title="Bản đồ 3D vị trí nhân viên"
-            points={filtered.map((location) => ({
-              id: String(location.employee_id),
-              longitude: location.longitude,
-              latitude: location.latitude,
-              altitude: location.altitude ?? 0,
-              title: location.full_name,
-              description: `${location.department_name} • ${location.floor_name ?? 'Chưa rõ tầng'}`,
-            }))}
+            points={filtered.map(mapLocationToScenePoint)}
+            buildings={buildings.map(mapBuildingToScene)}
+            geofences={sceneGeofences.map(mapGeofenceToScene)}
           />
           <div className="table-wrap">
             <table className="ui-table">
