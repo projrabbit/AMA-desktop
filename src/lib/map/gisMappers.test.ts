@@ -90,4 +90,47 @@ describe('GIS scene mappers', () => {
       isActive: true,
     });
   });
+
+  it('coerces string numeric fields from the API into numbers', () => {
+    const building = {
+      building_id: 2,
+      name: 'Demo House',
+      address: 'HCMC',
+      center_lat: '10.86941960',
+      center_lng: '106.80408810',
+      total_floors: 1,
+      arcgis_layer_id: 'demo-shell',
+      floors: [
+        { floor_id: 1, building_id: 2, floor_number: 1, floor_name: 'F1', altitude_min: '0.00', altitude_max: '3.50' },
+      ],
+    } as unknown as BuildingItem;
+
+    const mapped = mapBuildingToScene(building);
+    expect(mapped.longitude).toBe(106.8040881);
+    expect(mapped.latitude).toBe(10.8694196);
+    expect(mapped.floors).toEqual([{ id: 'floor-1', name: 'F1', altitudeMin: 0, altitudeMax: 3.5 }]);
+
+    const geofence = {
+      geofence_id: 9,
+      floor_id: 1,
+      name: 'Room 101',
+      building_id: 2,
+      building_name: 'Demo House',
+      floor_name: 'F1',
+      center_lat: '10.86941310',
+      center_lng: '106.80403377',
+      radius_meters: '5.00',
+      altitude_min: '0.00',
+      altitude_max: '3.50',
+      allow_checkin: true,
+      allow_checkout: true,
+      is_active: true,
+    } as unknown as GeofenceItem;
+
+    const mappedGeofence = mapGeofenceToScene(geofence);
+    expect(mappedGeofence.radiusMeters).toBe(5);
+    expect(mappedGeofence.altitudeMin).toBe(0);
+    expect(mappedGeofence.altitudeMax).toBe(3.5);
+    expect(mappedGeofence.longitude).toBe(106.80403377);
+  });
 });
