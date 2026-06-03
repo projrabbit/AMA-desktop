@@ -10,6 +10,16 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    // Proxy /api -> backend AMA-server để né CORS (backend chỉ cho phép origin :8080).
+    // Vite (Node) chuyển tiếp phía server nên trình duyệt gọi cùng origin, không phát sinh CORS.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
