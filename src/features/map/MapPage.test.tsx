@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MapPage } from './MapPage';
@@ -94,6 +94,19 @@ describe('MapPage', () => {
         },
       ],
     });
+  });
+
+  it('passes default toggle state and updates it when the 3D buildings toggle is clicked', async () => {
+    render(<MapPage />);
+
+    await waitFor(() => expect(mapMocks.arcgisSceneProps.length).toBeGreaterThan(0));
+    expect(mapMocks.arcgisSceneProps.at(-1)).toMatchObject({ showGeofences: true, showBuildings3d: false });
+
+    fireEvent.click(screen.getByLabelText('Khối 3D tòa nhà'));
+
+    await waitFor(() =>
+      expect(mapMocks.arcgisSceneProps.at(-1)).toMatchObject({ showGeofences: true, showBuildings3d: true }),
+    );
   });
 
   it('renders realtime employees with building and geofence GIS context from APIs', async () => {

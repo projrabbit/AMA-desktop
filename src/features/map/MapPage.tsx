@@ -27,6 +27,8 @@ export function MapPage() {
   const [floor, setFloor] = useState(ALL);
   const [department, setDepartment] = useState(ALL);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showGeofences, setShowGeofences] = useState(true);
+  const [showBuildings3d, setShowBuildings3d] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,6 +120,10 @@ export function MapPage() {
     [geofences, building, floor],
   );
 
+  const scenePoints = useMemo(() => filtered.map(mapLocationToScenePoint), [filtered]);
+  const sceneBuildings = useMemo(() => buildings.map(mapBuildingToScene), [buildings]);
+  const sceneGeofenceGraphics = useMemo(() => sceneGeofences.map(mapGeofenceToScene), [sceneGeofences]);
+
   const selected = filtered.find((item) => item.employee_id === selectedId) ?? null;
 
   if (loading) {
@@ -156,15 +162,33 @@ export function MapPage() {
           onChange={(event) => setDepartment(event.target.value)}
           options={[{ value: ALL, label: 'Tất cả phòng ban' }, ...departmentOptions]}
         />
+        <label className="map-toggle">
+          <input
+            type="checkbox"
+            checked={showGeofences}
+            onChange={(event) => setShowGeofences(event.target.checked)}
+          />
+          Vùng geofence
+        </label>
+        <label className="map-toggle">
+          <input
+            type="checkbox"
+            checked={showBuildings3d}
+            onChange={(event) => setShowBuildings3d(event.target.checked)}
+          />
+          Khối 3D tòa nhà
+        </label>
       </div>
 
       <div className="two-pane">
         <div className="screen-stack">
           <ArcgisScene
             title="Bản đồ 3D vị trí nhân viên"
-            points={filtered.map(mapLocationToScenePoint)}
-            buildings={buildings.map(mapBuildingToScene)}
-            geofences={sceneGeofences.map(mapGeofenceToScene)}
+            points={scenePoints}
+            buildings={sceneBuildings}
+            geofences={sceneGeofenceGraphics}
+            showGeofences={showGeofences}
+            showBuildings3d={showBuildings3d}
           />
           <div className="table-wrap">
             <table className="ui-table">
