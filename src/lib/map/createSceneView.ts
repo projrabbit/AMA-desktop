@@ -30,6 +30,30 @@ interface MapLike {
 interface ViewLike {
   destroy(): void;
   when(): Promise<void>;
+  goTo(target: unknown, options?: unknown): Promise<void>;
+}
+
+const METERS_PER_DEGREE_LAT = 111_320;
+
+// Square footprint (closed ring) centred on the building, with each vertex at
+// baseZ so the floor slab extrudes upward from its real altitude. Buildings read
+// as boxes, not cylinders. The API has no real footprint polygon, so we use a
+// fixed half-width.
+function buildFootprintRing(
+  longitude: number,
+  latitude: number,
+  baseZ: number,
+  halfMeters: number,
+): number[][] {
+  const dLat = halfMeters / METERS_PER_DEGREE_LAT;
+  const dLng = halfMeters / (METERS_PER_DEGREE_LAT * Math.cos((latitude * Math.PI) / 180));
+  return [
+    [longitude - dLng, latitude - dLat, baseZ],
+    [longitude + dLng, latitude - dLat, baseZ],
+    [longitude + dLng, latitude + dLat, baseZ],
+    [longitude - dLng, latitude + dLat, baseZ],
+    [longitude - dLng, latitude - dLat, baseZ],
+  ];
 }
 
 // Subtle blue → amber ramp so stacked floors read as distinct slabs.
@@ -55,7 +79,7 @@ export async function createSceneView({
   geofences = [],
   visibility,
 }: CreateSceneViewOptions): Promise<ArcgisSceneHandle> {
-  const { config: esriConfig, Graphic, Point, Circle, GraphicsLayer, Map: ArcgisMap, WebScene, SceneView } =
+  const { config: esriConfig, Graphic, Point, Circle, Polygon, GraphicsLayer, Map: ArcgisMap, WebScene, SceneView } =
     await loadArcgisCoreModules();
 
   if (config.apiKey) {
@@ -147,12 +171,10 @@ export async function createSceneView({
     buildFloorExtrusions(building).map(
       (floor) =>
         new Graphic({
-          geometry: new Circle({
-            center: [building.longitude, building.latitude, floor.baseZ],
-            geodesic: true,
-            numberOfPoints: 48,
-            radius: DEFAULT_FOOTPRINT_RADIUS_M,
-            radiusUnit: 'meters',
+          geometry: new Polygon({
+            rings: [buildFootprintRing(building.longitude, building.latitude, floor.baseZ, DEFAULT_FOOTPRINT_RADIUS_M)],
+            spatialReference: { wkid: 4326 },
+            hasZ: true,
           }),
           attributes: { building: building.name, floor: floor.label },
           symbol: {
@@ -229,6 +251,19 @@ export async function createSceneView({
   }) as ViewLike;
 
   await view.when();
+
+  // Frame the building(s) instead of the env default centre, which may be far away.
+  // animate:false keeps it deterministic across the scene's periodic data refreshes.
+  if (buildings.length > 0) {
+    const lngs = buildings.map((b) => b.longitude);
+    const lats = buildings.map((b) => b.latitude);
+    const center = [
+      (Math.min(...lngs) + Math.max(...lngs)) / 2,
+      (Math.min(...lats) + Math.max(...lats)) / 2,
+    ];
+    const zoom = buildings.length === 1 ? 18 : 16;
+    await view.goTo({ center, zoom, tilt: 55 }, { animate: false }).catch(() => undefined);
+  }
 
   return {
     destroy: () => view.destroy(),
