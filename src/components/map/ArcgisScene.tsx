@@ -9,13 +9,31 @@ interface ArcgisSceneProps {
   points?: MapPoint[];
   buildings?: MapBuilding[];
   geofences?: MapGeofence[];
+  showGeofences?: boolean;
+  showBuildings3d?: boolean;
   className?: string;
 }
 
-export function ArcgisScene({ title, points = [], buildings = [], geofences = [], className }: ArcgisSceneProps) {
+const EMPTY_POINTS: MapPoint[] = [];
+const EMPTY_BUILDINGS: MapBuilding[] = [];
+const EMPTY_GEOFENCES: MapGeofence[] = [];
+
+export function ArcgisScene({
+  title,
+  points = EMPTY_POINTS,
+  buildings = EMPTY_BUILDINGS,
+  geofences = EMPTY_GEOFENCES,
+  showGeofences = true,
+  showBuildings3d = false,
+  className,
+}: ArcgisSceneProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const handleRef = useRef<ArcgisSceneHandle | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Latest toggle values, read at mount time without forcing a rebuild.
+  const visibilityRef = useRef({ geofences: showGeofences, buildings3d: showBuildings3d });
+  visibilityRef.current = { geofences: showGeofences, buildings3d: showBuildings3d };
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +50,7 @@ export function ArcgisScene({ title, points = [], buildings = [], geofences = []
           points,
           buildings,
           geofences,
+          visibility: visibilityRef.current,
         });
         if (cancelled) {
           handleRef.current.destroy();
@@ -52,6 +71,10 @@ export function ArcgisScene({ title, points = [], buildings = [], geofences = []
       handleRef.current = null;
     };
   }, [points, buildings, geofences]);
+
+  useEffect(() => {
+    handleRef.current?.setLayerVisibility({ geofences: showGeofences, buildings3d: showBuildings3d });
+  }, [showGeofences, showBuildings3d]);
 
   return (
     <section className={className} aria-label={title} role="region">
