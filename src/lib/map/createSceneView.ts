@@ -72,6 +72,7 @@ export async function createSceneView({
     title: 'Tòa nhà 3D AMA',
     elevationInfo: { mode: 'absolute' },
   }) as GraphicsLayerLike;
+  // Employee locations are the page's primary purpose: always visible, no toggle.
   const employeeLayer = new GraphicsLayer({ title: 'Nhân viên (thời gian thực)' }) as GraphicsLayerLike;
 
   geofenceLayer.addMany(
@@ -197,6 +198,7 @@ export async function createSceneView({
   );
 
   geofenceLayer.visible = showGeofences;
+  // Building markers belong to the geofence/overlay view, so they share the geofence toggle.
   buildingMarkerLayer.visible = showGeofences;
   building3dLayer.visible = showBuildings3d;
 

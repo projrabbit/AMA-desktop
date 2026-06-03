@@ -147,8 +147,9 @@ describe('createSceneView', () => {
     const footprintCircles = arcgisMocks.createdCircles.filter((circle) => circle.radius === 20);
     expect(footprintCircles).toHaveLength(2);
 
+    // 1 employee point + 1 building marker point = 2 Point graphics.
     const employeeAndMarkerPoints = arcgisMocks.createdPoints.filter(Boolean);
-    expect(employeeAndMarkerPoints.length).toBeGreaterThanOrEqual(2);
+    expect(employeeAndMarkerPoints).toHaveLength(2);
   });
 
   it('initialises layer visibility from options and toggles it without rebuilding', async () => {
