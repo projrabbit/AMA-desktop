@@ -574,6 +574,21 @@ textarea {
   width: 100%;
 }
 
+.house-model-frame {
+  background: #07111f;
+  border: 1px solid #d4ddeb;
+  border-radius: 16px;
+  min-height: 680px;
+  overflow: hidden;
+}
+
+.house-model-frame iframe {
+  border: 0;
+  display: block;
+  height: 680px;
+  width: 100%;
+}
+
 @media (max-width: 1180px) {
   .overview-hero {
     align-items: stretch;
