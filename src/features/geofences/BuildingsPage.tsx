@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
 import { canPerform } from '@/lib/auth/permissions';
 import { useSession } from '@/lib/auth/session';
-import { withFallback } from '@/lib/data/withFallback';
-import { mockBuildings, mockGeofences } from '@/lib/mocks';
 import { buildingService } from '@/services/buildingService';
 import { geofenceService } from '@/services/geofenceService';
 import type { BuildingItem, FloorItem, GeofenceItem } from '@/types/api';
@@ -49,7 +46,7 @@ export function BuildingsPage() {
   const [buildings, setBuildings] = useState<BuildingItem[]>([]);
   const [geofences, setGeofences] = useState<GeofenceItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
 
@@ -66,15 +63,20 @@ export function BuildingsPage() {
 
   async function load() {
     setLoading(true);
-    const [buildRes, geoRes] = await Promise.all([
-      withFallback(() => buildingService.list({ include_floors: true }), mockBuildings),
-      withFallback(() => geofenceService.list(), mockGeofences),
-    ]);
-    setBuildings(buildRes.data);
-    setGeofences(geoRes.data);
-    setUsedMock(buildRes.usedMock || geoRes.usedMock);
-    setSelectedBuildingId((prev) => prev ?? buildRes.data[0]?.building_id ?? null);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const [buildRes, geoRes] = await Promise.all([
+        buildingService.list({ include_floors: true }),
+        geofenceService.list(),
+      ]);
+      setBuildings(buildRes.data);
+      setGeofences(geoRes.data);
+      setSelectedBuildingId((prev) => prev ?? buildRes.data[0]?.building_id ?? null);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -195,6 +197,10 @@ export function BuildingsPage() {
     return <LoadingState />;
   }
 
+  if (loadError) {
+    return <ErrorState />;
+  }
+
   return (
     <section className="screen-stack">
       <GeofenceSubnav />
@@ -207,7 +213,6 @@ export function BuildingsPage() {
           </p>
         </div>
         <div className="screen-header__actions">
-          <MockDataBadge visible={usedMock} />
           {canWrite ? <Button onClick={openCreateBuilding}>+ Thêm tòa nhà</Button> : null}
         </div>
       </header>

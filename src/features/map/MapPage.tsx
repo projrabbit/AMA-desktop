@@ -1,49 +1,46 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { ArcgisScene } from '@/components/map/ArcgisScene';
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Select } from '@/components/ui/Select';
 import { Tabs } from '@/components/ui/Tabs';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatTime } from '@/lib/format';
-import { mockRealtimeLocations } from '@/lib/mocks';
+import {
+  mapBuildingToScene,
+  mapGeofenceToScene,
+  mapLocationToScenePoint,
+} from '@/lib/map/gisMappers';
+import { buildingService } from '@/services/buildingService';
+import { geofenceService } from '@/services/geofenceService';
 import { realtimeService } from '@/services/realtimeService';
-import type { RealtimeLocationItem } from '@/types/api';
+import type { BuildingItem, GeofenceItem, RealtimeLocationItem } from '@/types/api';
 
 const POLL_INTERVAL_MS = 30_000;
 const ALL = '';
 const HOUSE_MODEL_SRC = '/testing/house_view_3_4_rooms_corridor_fixed.html';
 const MAP_VIEW_TABS = [
-  { id: 'house', label: 'Mô hình nhà' },
   { id: 'live', label: 'Vị trí nhân viên' },
+  { id: 'house', label: 'Mô hình nhà' },
 ];
 type MapViewMode = (typeof MAP_VIEW_TABS)[number]['id'];
 
-function distinctOptions(
-  items: RealtimeLocationItem[],
-  idKey: 'building_id' | 'floor_id',
-  labelKey: 'building_name' | 'floor_name',
-): { label: string; value: string }[] {
-  const map = new Map<string, string>();
-  for (const item of items) {
-    const id = item[idKey];
-    if (id !== null && id !== undefined) {
-      map.set(String(id), item[labelKey] ?? `#${id}`);
-    }
-  }
-  return [...map.entries()].map(([value, label]) => ({ value, label }));
+function numberFilter(value: string): number | undefined {
+  return value === ALL ? undefined : Number(value);
 }
 
 export function MapPage() {
   const [locations, setLocations] = useState<RealtimeLocationItem[]>([]);
+  const [buildings, setBuildings] = useState<BuildingItem[]>([]);
+  const [geofences, setGeofences] = useState<GeofenceItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [building, setBuilding] = useState(ALL);
   const [floor, setFloor] = useState(ALL);
   const [department, setDepartment] = useState(ALL);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<MapViewMode>('house');
+  const [showGeofences, setShowGeofences] = useState(true);
+  const [showBuildings3d, setShowBuildings3d] = useState(false);
+  const [viewMode, setViewMode] = useState<MapViewMode>('live');
 
   useEffect(() => {
     let cancelled = false;
@@ -52,14 +49,37 @@ export function MapPage() {
       if (initial) {
         setLoading(true);
       }
-      const { data, usedMock: mock } = await withFallback(
-        () => realtimeService.locations(),
-        mockRealtimeLocations,
-      );
-      if (!cancelled) {
-        setLocations(data);
-        setUsedMock(mock);
-        setLoading(false);
+      try {
+        setLoadError(false);
+        const buildingId = numberFilter(building);
+        const floorId = numberFilter(floor);
+        const departmentId = numberFilter(department);
+        const [locationRes, buildingRes, geofenceRes] = await Promise.all([
+          realtimeService.locations({
+            building_id: buildingId,
+            floor_id: floorId,
+            department_id: departmentId,
+          }),
+          buildingService.list({ include_floors: true }),
+          geofenceService.list({
+            ...(buildingId !== undefined ? { building_id: buildingId } : {}),
+            ...(floorId !== undefined ? { floor_id: floorId } : {}),
+            is_active: true,
+          }),
+        ]);
+        if (!cancelled) {
+          setLocations(locationRes.data);
+          setBuildings(buildingRes.data);
+          setGeofences(geofenceRes.data);
+        }
+      } catch {
+        if (!cancelled) {
+          setLoadError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -69,19 +89,30 @@ export function MapPage() {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [building, floor, department]);
 
   const buildingOptions = useMemo(
-    () => distinctOptions(locations, 'building_id', 'building_name'),
-    [locations],
+    () => buildings.map((item) => ({ value: String(item.building_id), label: item.name })),
+    [buildings],
   );
   const floorOptions = useMemo(
-    () => distinctOptions(locations, 'floor_id', 'floor_name'),
-    [locations],
+    () =>
+      buildings
+        .filter((item) => building === ALL || String(item.building_id) === building)
+        .flatMap((item) =>
+          (item.floors ?? []).map((floorItem) => ({
+            value: String(floorItem.floor_id),
+            label: `${item.name} • ${floorItem.floor_name}`,
+          })),
+        ),
+    [buildings, building],
   );
   const departmentOptions = useMemo(() => {
-    const set = new Set(locations.map((item) => item.department_name).filter(Boolean));
-    return [...set].map((name) => ({ value: name, label: name }));
+    const map = new Map<number, string>();
+    for (const item of locations) {
+      map.set(item.department_id, item.department_name);
+    }
+    return [...map.entries()].map(([value, label]) => ({ value: String(value), label }));
   }, [locations]);
 
   const filtered = useMemo(
@@ -90,15 +121,36 @@ export function MapPage() {
         (item) =>
           (building === ALL || String(item.building_id) === building) &&
           (floor === ALL || String(item.floor_id) === floor) &&
-          (department === ALL || item.department_name === department),
+          (department === ALL || String(item.department_id) === department),
       ),
     [locations, building, floor, department],
+  );
+  const sceneGeofences = useMemo(
+    () =>
+      geofences.filter(
+        (item) =>
+          item.is_active &&
+          (building === ALL || String(item.building_id ?? '') === building) &&
+          (floor === ALL || String(item.floor_id) === floor),
+      ),
+    [geofences, building, floor],
+  );
+
+  const scenePoints = useMemo(() => filtered.map(mapLocationToScenePoint), [filtered]);
+  const sceneBuildings = useMemo(() => buildings.map(mapBuildingToScene), [buildings]);
+  const sceneGeofenceGraphics = useMemo(
+    () => sceneGeofences.map(mapGeofenceToScene),
+    [sceneGeofences],
   );
 
   const selected = filtered.find((item) => item.employee_id === selectedId) ?? null;
 
   if (loading) {
     return <LoadingState />;
+  }
+
+  if (loadError) {
+    return <ErrorState />;
   }
 
   return (
@@ -116,7 +168,6 @@ export function MapPage() {
             activeId={viewMode}
             onChange={(id) => setViewMode(id as MapViewMode)}
           />
-          <MockDataBadge visible={usedMock} />
         </div>
       </header>
 
@@ -149,20 +200,33 @@ export function MapPage() {
               onChange={(event) => setDepartment(event.target.value)}
               options={[{ value: ALL, label: 'Tất cả phòng ban' }, ...departmentOptions]}
             />
+            <label className="map-toggle">
+              <input
+                type="checkbox"
+                checked={showGeofences}
+                onChange={(event) => setShowGeofences(event.target.checked)}
+              />
+              Vùng geofence
+            </label>
+            <label className="map-toggle">
+              <input
+                type="checkbox"
+                checked={showBuildings3d}
+                onChange={(event) => setShowBuildings3d(event.target.checked)}
+              />
+              Khối 3D tòa nhà
+            </label>
           </div>
 
           <div className="two-pane">
             <div className="screen-stack">
               <ArcgisScene
                 title="Bản đồ 3D vị trí nhân viên"
-                points={filtered.map((location) => ({
-                  id: String(location.employee_id),
-                  longitude: location.longitude,
-                  latitude: location.latitude,
-                  altitude: location.altitude ?? 0,
-                  title: location.full_name,
-                  description: `${location.department_name} • ${location.floor_name ?? 'Chưa rõ tầng'}`,
-                }))}
+                points={scenePoints}
+                buildings={sceneBuildings}
+                geofences={sceneGeofenceGraphics}
+                showGeofences={showGeofences}
+                showBuildings3d={showBuildings3d}
               />
               <div className="table-wrap">
                 <table className="ui-table">

@@ -22,7 +22,7 @@ export interface ArcgisAppConfig {
   defaultZoom: number;
 }
 
-const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+const DEFAULT_API_BASE_URL = '/api/v1';
 const DEFAULT_PORTAL_URL = 'https://www.arcgis.com';
 const DEFAULT_LNG = 106.700981;
 const DEFAULT_LAT = 10.776889;
@@ -52,13 +52,5 @@ export function getArcgisConfig(env: RawArcgisEnv = import.meta.env as RawArcgis
 }
 
 export function isLoginBypassEnabled(rawFlag: string | undefined): boolean {
-  return rawFlag?.trim().toLowerCase() === 'true';
-}
-
-/**
- * Chế độ demo dùng dữ liệu mẫu tức thì, không gọi backend.
- * Bật bằng VITE_USE_MOCK=true (xem trước giao diện khi chưa chạy AMA-server).
- */
-export function isMockMode(rawFlag: string | undefined = import.meta.env.VITE_USE_MOCK): boolean {
   return rawFlag?.trim().toLowerCase() === 'true';
 }

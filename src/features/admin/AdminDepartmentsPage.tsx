@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatNumber } from '@/lib/format';
-import { mockDepartments, mockEmployeeList } from '@/lib/mocks';
 import { departmentService } from '@/services/departmentService';
 import { employeeService } from '@/services/employeeService';
 import type { DepartmentItem, EmployeeListItem } from '@/types/api';
@@ -27,7 +24,7 @@ export function AdminDepartmentsPage() {
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
@@ -39,14 +36,19 @@ export function AdminDepartmentsPage() {
 
   async function load() {
     setLoading(true);
-    const [deptRes, empRes] = await Promise.all([
-      withFallback(() => departmentService.list(), mockDepartments),
-      withFallback(() => employeeService.list({ limit: 200 }), mockEmployeeList),
-    ]);
-    setDepartments(deptRes.data);
-    setEmployees(empRes.data);
-    setUsedMock(deptRes.usedMock || empRes.usedMock);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const [deptRes, empRes] = await Promise.all([
+        departmentService.list(),
+        employeeService.list({ limit: 100 }),
+      ]);
+      setDepartments(deptRes.data);
+      setEmployees(empRes.data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -108,6 +110,10 @@ export function AdminDepartmentsPage() {
     return <LoadingState />;
   }
 
+  if (loadError) {
+    return <ErrorState />;
+  }
+
   return (
     <section className="screen-stack">
       <AdminNav />
@@ -118,7 +124,6 @@ export function AdminDepartmentsPage() {
           <p>Quản lý cơ cấu phòng ban và trưởng phòng. Phòng ban dùng để lọc báo cáo và phân nhóm nhân sự.</p>
         </div>
         <div className="screen-header__actions">
-          <MockDataBadge visible={usedMock} />
           <Button onClick={openCreate}>+ Thêm phòng ban</Button>
         </div>
       </header>

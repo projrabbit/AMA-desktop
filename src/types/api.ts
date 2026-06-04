@@ -111,6 +111,9 @@ export interface DashboardSummaryData {
 }
 
 export interface RealtimeLocationItem extends ActiveLocationItem {
+  department_id: number;
+  record_id: number;
+  arcgis_layer_id: string | null;
   gps_accuracy: number | null;
   checked_in_at: string;
 }

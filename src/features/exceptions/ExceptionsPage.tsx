@@ -1,14 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
-import { withFallback } from '@/lib/data/withFallback';
 import { formatDateTime } from '@/lib/format';
 import {
   activeFraudFlagLabels,
@@ -16,7 +14,6 @@ import {
   getAttendanceTypeLabel,
   getRejectionReasonLabel,
 } from '@/lib/i18n/labels';
-import { mockExceptionDetail, mockExceptions } from '@/lib/mocks';
 import { attendanceService } from '@/services/attendanceService';
 import type { AttendanceExceptionItem, AttendanceRecordDetail } from '@/types/api';
 
@@ -36,7 +33,7 @@ function maskFingerprint(value: string): string {
 export function ExceptionsPage() {
   const [exceptions, setExceptions] = useState<AttendanceExceptionItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const [status, setStatus] = useState(ALL);
@@ -61,10 +58,15 @@ export function ExceptionsPage() {
       from: from || undefined,
       to: to || undefined,
     };
-    const { data, usedMock: mock } = await withFallback(() => attendanceService.exceptions(params), mockExceptions);
-    setExceptions(data);
-    setUsedMock(mock);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const { data } = await attendanceService.exceptions(params);
+      setExceptions(data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -75,9 +77,15 @@ export function ExceptionsPage() {
   async function selectRecord(recordId: number) {
     setSelectedId(recordId);
     setDetailLoading(true);
-    const { data } = await withFallback(() => attendanceService.detail(recordId), mockExceptionDetail);
-    setSelected(data);
-    setDetailLoading(false);
+    try {
+      const { data } = await attendanceService.detail(recordId);
+      setSelected(data);
+    } catch (error) {
+      setNotice(getErrorMessage(error));
+      setSelectedId(null);
+    } finally {
+      setDetailLoading(false);
+    }
   }
 
   async function handleApprove(event: FormEvent) {
@@ -104,6 +112,10 @@ export function ExceptionsPage() {
     return <LoadingState />;
   }
 
+  if (loadError) {
+    return <ErrorState />;
+  }
+
   return (
     <section className="screen-stack">
       <header className="screen-header">
@@ -111,7 +123,6 @@ export function ExceptionsPage() {
           <h2>Quản lý ngoại lệ và cảnh báo gian lận</h2>
           <p>Xem, kiểm tra và xử lý các lượt chấm công bất thường. Mọi thao tác đều được ghi vào nhật ký hệ thống.</p>
         </div>
-        <MockDataBadge visible={usedMock} />
       </header>
 
       {notice ? (

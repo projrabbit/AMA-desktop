@@ -38,7 +38,7 @@ describe('LoginPage', () => {
       </SessionProvider>,
     );
 
-    await userEvent.type(screen.getByLabelText('Email công ty'), 'employee@example.com');
+    await userEvent.type(screen.getByLabelText('User được cấp'), 'employee@example.com');
     await userEvent.type(screen.getByLabelText('Mật khẩu'), 'Employee@2026');
     await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
 

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 
-import { MockDataBadge } from '@/components/page-states/MockDataBadge';
-import { LoadingState } from '@/components/page-states/PageState';
+import { ErrorState, LoadingState } from '@/components/page-states/PageState';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -10,8 +9,6 @@ import { Select } from '@/components/ui/Select';
 import { getErrorMessage } from '@/lib/api/getErrorMessage';
 import { canPerform } from '@/lib/auth/permissions';
 import { useSession } from '@/lib/auth/session';
-import { withFallback } from '@/lib/data/withFallback';
-import { mockBuildings, mockGeofences } from '@/lib/mocks';
 import { buildingService } from '@/services/buildingService';
 import { geofenceService } from '@/services/geofenceService';
 import type { BuildingItem, FloorItem, GeofenceItem } from '@/types/api';
@@ -56,7 +53,7 @@ export function GeofencePage() {
   const [geofences, setGeofences] = useState<GeofenceItem[]>([]);
   const [buildings, setBuildings] = useState<BuildingItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usedMock, setUsedMock] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const [buildingFilter, setBuildingFilter] = useState(ALL);
@@ -72,14 +69,19 @@ export function GeofencePage() {
 
   async function load() {
     setLoading(true);
-    const [geoRes, buildRes] = await Promise.all([
-      withFallback(() => geofenceService.list(), mockGeofences),
-      withFallback(() => buildingService.list({ include_floors: true }), mockBuildings),
-    ]);
-    setGeofences(geoRes.data);
-    setBuildings(buildRes.data);
-    setUsedMock(geoRes.usedMock || buildRes.usedMock);
-    setLoading(false);
+    try {
+      setLoadError(false);
+      const [geoRes, buildRes] = await Promise.all([
+        geofenceService.list(),
+        buildingService.list({ include_floors: true }),
+      ]);
+      setGeofences(geoRes.data);
+      setBuildings(buildRes.data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -201,6 +203,10 @@ export function GeofencePage() {
     return <LoadingState />;
   }
 
+  if (loadError) {
+    return <ErrorState />;
+  }
+
   return (
     <section className="screen-stack">
       <GeofenceSubnav />
@@ -211,7 +217,6 @@ export function GeofencePage() {
           <p>Tạo, sửa và vô hiệu hóa vùng chấm công theo tòa nhà, tầng và phạm vi độ cao.</p>
         </div>
         <div className="screen-header__actions">
-          <MockDataBadge visible={usedMock} />
           {canWrite ? (
             <Button onClick={openCreate} disabled={!hasBackground}>
               + Thêm vùng chấm công

@@ -54,7 +54,7 @@ export function LoginPage({ login = authService.login }: LoginPageProps) {
         <h1>Đăng nhập Dashboard</h1>
         <p>Theo dõi chấm công, bản đồ 3D và ngoại lệ trong một không gian quản trị.</p>
         <Input
-          label="Email công ty"
+          label="User được cấp"
           autoComplete="username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
